@@ -1,35 +1,45 @@
 package org.plaehn.adventofcode.day03
 
+import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.Matrix
 
 
 class GearRatios(private val engineSchematic: Matrix<Char>) {
 
-    fun computeSumOfAllPartNumbers(): Long {
-        val partNumbers = buildList {
-            engineSchematic.rows().forEachIndexed { rowIndex, row ->
-                digitRegex
-                    .findAll(row.joinToString(""))
-                    .forEach { matchResult ->
-                        add(
-                            PartNumber(
-                                partNumber = matchResult.value.toInt(),
-                                row = rowIndex,
-                                columnRange = matchResult.range
-                            )
-                        )
-                    }
-            }
-        }
-        println(partNumbers)
-        return 0
-    }
+    fun computeSumOfAllPartNumbers(): Long =
+        engineSchematic
+            .extractPartNumbers()
+            .filter { it.hasSymbolNeighbor() }
+            .sumOf { it.partNumber }
 
-    data class PartNumber(
-        val partNumber: Int,
-        val row: Int,
-        val columnRange: IntRange
-    )
+    private fun Matrix<Char>.extractPartNumbers() =
+        rows()
+            .mapIndexed { rowIndex, row ->
+                val rowAsString = row.joinToString("")
+                rowAsString.extractPartNumbers(rowIndex)
+            }
+            .flatten()
+
+    private fun String.extractPartNumbers(rowIndex: Int): List<PartNumber> =
+        digitRegex
+            .findAll(this)
+            .map { matchResult -> matchResult.toPartNumber(rowIndex) }
+            .toList()
+
+    private fun MatchResult.toPartNumber(rowIndex: Int) =
+        PartNumber(
+            partNumber = value.toLong(),
+            neighbors = collectNeighbors(rowIndex, range)
+        )
+
+    private fun collectNeighbors(rowIndex: Int, range: IntRange): Set<Char> =
+        range
+            .flatMap { columnIndex ->
+                engineSchematic
+                    .neighbors(coord = Coord(x = columnIndex, y = rowIndex), includeDiagonals = true)
+                    .map { engineSchematic[it] }
+            }
+            .toSet()
 
     companion object {
 

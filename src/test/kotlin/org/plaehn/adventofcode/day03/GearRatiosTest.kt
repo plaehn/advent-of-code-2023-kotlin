@@ -26,6 +26,6 @@ internal class GearRatiosTest {
 
         val sumOfAllPartNumbers = gearRatios.computeSumOfAllPartNumbers()
 
-        assertThat(sumOfAllPartNumbers).isEqualTo(0L)
+        assertThat(sumOfAllPartNumbers).isEqualTo(538046L)
     }
 }
