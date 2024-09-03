@@ -48,6 +48,6 @@ internal class GearRatiosTest {
 
         val sumOfAllGearRatios = gearRatios.computeSumOfGearRatios()
 
-        assertThat(sumOfAllGearRatios).isEqualTo(0L)
+        assertThat(sumOfAllGearRatios).isEqualTo(81709807L)
     }
 }

@@ -2,6 +2,7 @@ package org.plaehn.adventofcode.day03
 
 import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.Matrix
+import org.plaehn.adventofcode.common.product
 
 
 class GearRatios(private val engineSchematic: Matrix<Char>) {
@@ -47,8 +48,24 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
         }
 
     fun computeSumOfGearRatios(): Long {
-        return -1
-        // TODO
+        val potentialGears2AdjacentPartNumbers: Map<Coord, List<PartNumber>> = engineSchematic
+            .extractPartNumbers()
+            .flatMap { partNumber ->
+                partNumber.neighbors
+                    .filter { engineSchematic[it] == '*' }
+                    .map { coord ->
+                        coord to partNumber
+                    }
+            }
+            .groupBy { it.first }
+            .mapValues { it.value.map { pair -> pair.second } }
+
+        return potentialGears2AdjacentPartNumbers
+            .filter { (_, partNumbers) -> partNumbers.size == 2 }
+            .map { (_, partNumbers) ->
+                partNumbers.map { it.partNumber }.product()
+            }
+            .sum()
     }
 
     companion object {
