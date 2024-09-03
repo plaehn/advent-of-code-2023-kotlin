@@ -51,30 +51,27 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
             .findGears()
             .sumOf { it.gearRatio() }
 
-    private fun Matrix<Char>.findGears(): List<Gear> =
+    private fun Matrix<Char>.findGears(): List<AsteriskWithAdjacentPartNumbers> =
         extractPartNumbers()
-            .toAsteriskCoordWithPartNumbers()
+            .toAsterisksWithAdjacentPartNumber()
             .groupByCoord()
-            .filter { it.adjacentPartNumbers.size == 2 }
-            .map { it.toGear() }
+            .filter { it.isGear() }
 
-    private fun List<AsteriskCoordWithPartNumbers>.groupByCoord(): List<AsteriskCoordWithPartNumbers> =
-        groupBy { it.coord }
-            .map { (coord, asteriskCoordWithPartNumbers) ->
-                AsteriskCoordWithPartNumbers(
-                    coord = coord,
-                    adjacentPartNumbers = asteriskCoordWithPartNumbers.flatMap { it.adjacentPartNumbers }.toSet()
-                )
-            }
-
-    private fun List<PartNumber>.toAsteriskCoordWithPartNumbers(): List<AsteriskCoordWithPartNumbers> =
+    private fun List<PartNumber>.toAsterisksWithAdjacentPartNumber(): List<AsteriskWithAdjacentPartNumbers> =
         flatMap { partNumber ->
             partNumber.neighbors
                 .filter { this@GearRatios.engineSchematic[it] == '*' }
-                .map { coord ->
-                    AsteriskCoordWithPartNumbers(coord, setOf(partNumber))
-                }
+                .map { coord -> AsteriskWithAdjacentPartNumbers(coord, setOf(partNumber)) }
         }
+
+    private fun List<AsteriskWithAdjacentPartNumbers>.groupByCoord(): List<AsteriskWithAdjacentPartNumbers> =
+        groupBy { it.coord }
+            .map { (coord, asterisksWithAdjacentPartNumbers) ->
+                AsteriskWithAdjacentPartNumbers(
+                    coord = coord,
+                    adjacentPartNumbers = asterisksWithAdjacentPartNumbers.flatMap { it.adjacentPartNumbers }.toSet()
+                )
+            }
 
     companion object {
 
