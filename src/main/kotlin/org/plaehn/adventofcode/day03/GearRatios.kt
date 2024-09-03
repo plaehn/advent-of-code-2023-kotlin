@@ -32,14 +32,24 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
             neighbors = collectNeighbors(rowIndex, range)
         )
 
-    private fun collectNeighbors(rowIndex: Int, range: IntRange): Set<Char> =
+    private fun collectNeighbors(rowIndex: Int, range: IntRange): Set<Coord> =
         range
             .flatMap { columnIndex ->
                 engineSchematic
                     .neighbors(coord = Coord(x = columnIndex, y = rowIndex), includeDiagonals = true)
-                    .map { engineSchematic[it] }
             }
             .toSet()
+
+    private fun PartNumber.hasSymbolNeighbor() =
+        neighbors.any { neighbor ->
+            val neighborChar = engineSchematic[neighbor]
+            !neighborChar.isDigit() && neighborChar != '.'
+        }
+
+    fun computeSumOfGearRatios(): Long {
+        return -1
+        // TODO
+    }
 
     companion object {
 
