@@ -51,21 +51,30 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
             .findGears()
             .sumOf { it.gearRatio() }
 
-    private fun Matrix<Char>.findGears() =
+    private fun Matrix<Char>.findGears(): List<Gear> =
         extractPartNumbers()
-            .flatMap { partNumber ->
-                partNumber.neighbors
-                    .filter { this@GearRatios.engineSchematic[it] == '*' }
-                    .map { coord -> coord to partNumber }
-            }
-            .groupBy { it.first }
-            .filter { (_, partNumbers) -> partNumbers.size == 2 }
-            .map { (coord, partNumbers) ->
-                Gear(
+            .toAsteriskCoordWithPartNumbers()
+            .groupByCoord()
+            .filter { it.adjacentPartNumbers.size == 2 }
+            .map { it.toGear() }
+
+    private fun List<AsteriskCoordWithPartNumbers>.groupByCoord(): List<AsteriskCoordWithPartNumbers> =
+        groupBy { it.coord }
+            .map { (coord, asteriskCoordWithPartNumbers) ->
+                AsteriskCoordWithPartNumbers(
                     coord = coord,
-                    adjacentPartNumbers = partNumbers.map { it.second }.toSet()
+                    adjacentPartNumbers = asteriskCoordWithPartNumbers.flatMap { it.adjacentPartNumbers }.toSet()
                 )
             }
+
+    private fun List<PartNumber>.toAsteriskCoordWithPartNumbers(): List<AsteriskCoordWithPartNumbers> =
+        flatMap { partNumber ->
+            partNumber.neighbors
+                .filter { this@GearRatios.engineSchematic[it] == '*' }
+                .map { coord ->
+                    AsteriskCoordWithPartNumbers(coord, setOf(partNumber))
+                }
+        }
 
     companion object {
 
@@ -75,3 +84,4 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
             GearRatios(Matrix.fromRows(input.map { line -> line.toList() }, '.'))
     }
 }
+
