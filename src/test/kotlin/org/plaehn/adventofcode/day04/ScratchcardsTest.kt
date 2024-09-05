@@ -28,4 +28,26 @@ class ScratchcardsTest {
 
         assertThat(points).isEqualTo(24848)
     }
+
+    @Test
+    fun `Compute scratch cards for test input`() {
+        val lines = this::class.java.readLines("test_input.txt")
+
+        val scratchcards = Scratchcards.fromInput(lines)
+
+        val cardCount = scratchcards.countScratchCards()
+
+        assertThat(cardCount).isEqualTo(30)
+    }
+
+    @Test
+    fun `Compute scratch cards for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val scratchcards = Scratchcards.fromInput(lines)
+
+        val cardCount = scratchcards.countScratchCards()
+
+        assertThat(cardCount).isEqualTo(7258152)
+    }
 }
