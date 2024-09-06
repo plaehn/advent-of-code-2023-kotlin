@@ -2,12 +2,12 @@ package org.plaehn.adventofcode.day02
 
 import org.plaehn.adventofcode.common.tokenize
 
-class CubeConundrum(val games: List<Game>) {
+class CubeConundrum(private val games: List<Game>) {
 
-    fun sumOfIdsOfPossibleGames(maxCubeCountPerColor: Map<Color, Int>): Int {
-        println(games)
-        return 0
-    }
+    fun sumOfIdsOfPossibleGames(maxCubeCountPerColor: Map<Color, Int>): Int =
+        games
+            .filter { it.isPossible(maxCubeCountPerColor) }
+            .sumOf { it.id }
 
     companion object {
         fun fromInput(lines: List<String>): CubeConundrum {
@@ -19,6 +19,9 @@ class CubeConundrum(val games: List<Game>) {
         val id: Int,
         val rounds: List<Round>
     ) {
+        fun isPossible(maxCubeCountPerColor: Map<Color, Int>) =
+            rounds.all { it.isPossible(maxCubeCountPerColor) }
+
         companion object {
             fun fromInput(input: String): Game {
                 val (gameId, rounds) = input.split(":")
@@ -33,6 +36,11 @@ class CubeConundrum(val games: List<Game>) {
     data class Round(
         val shownCubeCountPerColor: Map<Color, Int>
     ) {
+        fun isPossible(maxCubeCountPerColor: Map<Color, Int>) =
+            shownCubeCountPerColor.all { (color, count) ->
+                count <= maxCubeCountPerColor.getOrDefault(color, 0)
+            }
+
         companion object {
             fun fromInput(input: String) =
                 Round(shownCubeCountPerColor = input

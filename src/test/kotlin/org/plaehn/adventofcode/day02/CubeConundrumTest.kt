@@ -37,7 +37,7 @@ class CubeConundrumTest {
         )
         val sumOfIdsOfPossibleGames = cubeConundrum.sumOfIdsOfPossibleGames(maxCubeCountPerColor)
 
-        assertThat(sumOfIdsOfPossibleGames).isEqualTo(-1)
+        assertThat(sumOfIdsOfPossibleGames).isEqualTo(2256)
     }
 
 }
