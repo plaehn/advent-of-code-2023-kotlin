@@ -1,5 +1,6 @@
 package org.plaehn.adventofcode.day02
 
+import org.plaehn.adventofcode.common.product
 import org.plaehn.adventofcode.common.tokenize
 
 class CubeConundrum(private val games: List<Game>) {
@@ -9,10 +10,13 @@ class CubeConundrum(private val games: List<Game>) {
             .filter { it.isPossible(maxCubeCountPerColor) }
             .sumOf { it.id }
 
+    fun computeSumOfPowerOfCubeSets(): Int =
+        games
+            .sumOf { it.computePowerOfCubeSets() }
+
     companion object {
-        fun fromInput(lines: List<String>): CubeConundrum {
-            return CubeConundrum(lines.map { Game.fromInput(it) })
-        }
+        fun fromInput(lines: List<String>) =
+            CubeConundrum(lines.map { Game.fromInput(it) })
     }
 
     data class Game(
@@ -21,6 +25,14 @@ class CubeConundrum(private val games: List<Game>) {
     ) {
         fun isPossible(maxCubeCountPerColor: Map<Color, Int>) =
             rounds.all { it.isPossible(maxCubeCountPerColor) }
+
+        fun computePowerOfCubeSets(): Int =
+            Color.entries
+                .map { getMaxCountForColor(it) }
+                .product()
+
+        private fun getMaxCountForColor(color: Color) =
+            rounds.maxOf { it.shownCubeCountPerColor.getOrDefault(color, 0) }
 
         companion object {
             fun fromInput(input: String): Game {

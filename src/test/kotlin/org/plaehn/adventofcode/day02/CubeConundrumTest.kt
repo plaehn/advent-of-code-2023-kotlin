@@ -40,4 +40,25 @@ class CubeConundrumTest {
         assertThat(sumOfIdsOfPossibleGames).isEqualTo(2256)
     }
 
+    @Test
+    fun `Compute sum of power of cube sets for test input`() {
+        val lines = this::class.java.readLines("test_input.txt")
+
+        val cubeConundrum = CubeConundrum.fromInput(lines)
+
+        val sumOfPowerOfCubeSets = cubeConundrum.computeSumOfPowerOfCubeSets()
+
+        assertThat(sumOfPowerOfCubeSets).isEqualTo(2286)
+    }
+
+    @Test
+    fun `Compute sum of power of cube sets for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val cubeConundrum = CubeConundrum.fromInput(lines)
+
+        val sumOfPowerOfCubeSets = cubeConundrum.computeSumOfPowerOfCubeSets()
+
+        assertThat(sumOfPowerOfCubeSets).isEqualTo(74229)
+    }
 }
