@@ -4,16 +4,30 @@ import org.plaehn.adventofcode.common.tokenize
 
 class SeedLocationMapping(
     val seeds: List<Long>,
-    val mappings: List<Mapping>
+    val inputMappings: List<Mapping>
 ) {
 
     fun findLowestLocationNumber(): Long =
-        seeds.minOfOrNull { it.applyMappings() } ?: throw IllegalStateException()
+        seeds.minOfOrNull { it.applyMappings(inputMappings) } ?: throw IllegalStateException()
 
-    private fun Long.applyMappings() =
+    private fun Long.applyMappings(mappings: List<Mapping>) =
         mappings.fold(this) { acc, mapping ->
             mapping.applyTo(acc)
         }
+
+    fun findLowestLocationNumberWithSeedPairs(): Long {
+        val seedRanges = seeds.chunked(2) { (start, length) ->
+            start..<start + length
+        }
+
+        val reversedMappings = inputMappings.reversed().map { it.reversed() }
+
+        return (0..Long.MAX_VALUE).first { location ->
+            val seed = location.applyMappings(reversedMappings)
+            seedRanges.any { it.contains(seed) }
+        }
+    }
+
 
     companion object {
         fun fromInput(chunks: List<List<String>>): SeedLocationMapping {
@@ -22,7 +36,7 @@ class SeedLocationMapping(
 
             return SeedLocationMapping(
                 seeds = seeds,
-                mappings = mappings
+                inputMappings = mappings
             )
         }
     }
@@ -34,6 +48,9 @@ class SeedLocationMapping(
             ranges.firstNotNullOfOrNull { range ->
                 range.applyTo(input)
             } ?: input
+
+        fun reversed(): Mapping =
+            Mapping(ranges.map { it.reversed() })
 
         companion object {
             fun fromInput(chunk: List<String>) =
@@ -57,6 +74,14 @@ class SeedLocationMapping(
             } else {
                 null
             }
+
+        fun reversed() =
+            Range(
+                destinationRangeStart = sourceRange.first,
+                sourceRange = destinationRangeStart..<destinationRangeStart + sourceRange.size()
+            )
+
+        private fun LongRange.size() = endInclusive - start
 
         companion object {
             fun fromInput(input: String): Range {

@@ -30,6 +30,28 @@ class SeedLocationMappingTest {
         assertThat(lowestLocationNumber).isEqualTo(389056265L)
     }
 
+    @Test
+    fun `Find lowest location number treating seeds as pairs for test input`() {
+        val chunks = readInput("test_input.txt")
+
+        val seedLocationMapping = SeedLocationMapping.fromInput(chunks)
+
+        val lowestLocationNumber = seedLocationMapping.findLowestLocationNumberWithSeedPairs()
+
+        assertThat(lowestLocationNumber).isEqualTo(46L)
+    }
+
+    @Test
+    fun `Find lowest location number treating seeds as pairs for puzzle input`() {
+        val chunks = readInput("puzzle_input.txt")
+
+        val seedLocationMapping = SeedLocationMapping.fromInput(chunks)
+
+        val lowestLocationNumber = seedLocationMapping.findLowestLocationNumberWithSeedPairs()
+
+        assertThat(lowestLocationNumber).isEqualTo(137516820L)
+    }
+
     private fun readInput(resource: String): List<List<String>> =
         this::class.java
             .slurp(resource)
