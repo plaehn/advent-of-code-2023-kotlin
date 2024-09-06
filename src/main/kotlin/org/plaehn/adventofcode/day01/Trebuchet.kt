@@ -1,14 +1,11 @@
 package org.plaehn.adventofcode.day01
 
-class Trebuchet(private val input: List<String>) {
+class Trebuchet(
+    private val input: List<String>,
+    acceptWordsForDigits: Boolean = false
+) {
 
-    fun computeSumOfCalibrationValues(acceptWordsForDigits: Boolean = false): Int =
-        input.sumOf { it.toCalibrationValue(acceptWordsForDigits) }
-
-    private fun String.toCalibrationValue(acceptWordsForDigits: Boolean): Int {
-        val digitStrings = constructDigitStrings(acceptWordsForDigits)
-        return 10 * findFirstOccurrence(digitStrings).toIntDigit() + findLastOccurrence(digitStrings).toIntDigit()
-    }
+    private val digitStrings = constructDigitStrings(acceptWordsForDigits)
 
     private fun constructDigitStrings(acceptWordsForDigits: Boolean) =
         ('1'..'9').map { it.toString() }.toSet() +
@@ -18,13 +15,19 @@ class Trebuchet(private val input: List<String>) {
                 emptySet()
             }
 
-    private fun String.findFirstOccurrence(digitStrings: Set<String>) =
-        findDigitStringStartingAt(indexOfAny(digitStrings), digitStrings)
+    fun computeSumOfCalibrationValues(): Int =
+        input.sumOf { it.toCalibrationValue() }
 
-    private fun String.findLastOccurrence(digitStrings: Set<String>) =
-        findDigitStringStartingAt(lastIndexOfAny(digitStrings), digitStrings)
+    private fun String.toCalibrationValue(): Int =
+        10 * findFirstOccurrence().toIntDigit() + findLastOccurrence().toIntDigit()
 
-    private fun String.findDigitStringStartingAt(index: Int, digitStrings: Set<String>): String {
+    private fun String.findFirstOccurrence() =
+        findDigitStringStartingAt(indexOfAny(digitStrings))
+
+    private fun String.findLastOccurrence() =
+        findDigitStringStartingAt(lastIndexOfAny(digitStrings))
+
+    private fun String.findDigitStringStartingAt(index: Int): String {
         val substringStartingWithDigitString = substring(index)
         return digitStrings.find { digitString ->
             substringStartingWithDigitString.startsWith(digitString)
