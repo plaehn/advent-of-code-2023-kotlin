@@ -8,8 +8,8 @@ import org.plaehn.adventofcode.common.readLines
 class TrebuchetTest {
 
     @Test
-    fun `Compute sum of all calibration values for test input`() {
-        val lines = this::class.java.readLines("test_input.txt")
+    fun `Compute sum of all calibration values for part one for test input`() {
+        val lines = this::class.java.readLines("test_input_part_1.txt")
 
         val trebuchet = Trebuchet(lines)
 
@@ -19,7 +19,7 @@ class TrebuchetTest {
     }
 
     @Test
-    fun `Compute sum of all calibration values for puzzle input`() {
+    fun `Compute sum of all calibration values for part one for puzzle input`() {
         val lines = this::class.java.readLines("puzzle_input.txt")
 
         val trebuchet = Trebuchet(lines)
@@ -27,5 +27,27 @@ class TrebuchetTest {
         val sum = trebuchet.computeSumOfCalibrationValues()
 
         assertThat(sum).isEqualTo(53080)
+    }
+
+    @Test
+    fun `Compute sum of all calibration values for part two for test input`() {
+        val lines = this::class.java.readLines("test_input_part_2.txt")
+
+        val trebuchet = Trebuchet(lines)
+
+        val sum = trebuchet.computeSumOfCalibrationValues(acceptWordsForDigits = true)
+
+        assertThat(sum).isEqualTo(281)
+    }
+
+    @Test
+    fun `Compute sum of all calibration values for part two for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val trebuchet = Trebuchet(lines)
+
+        val sum = trebuchet.computeSumOfCalibrationValues(acceptWordsForDigits = true)
+
+        assertThat(sum).isEqualTo(53268)
     }
 }
