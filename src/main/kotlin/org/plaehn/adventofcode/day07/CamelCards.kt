@@ -8,7 +8,7 @@ class CamelCards(val handsWithBids: List<HandWithBid>) {
 
     fun computeTotalWinnings(): Long =
         handsWithBids
-            .sortedBy { it.hand }.also { println(it.joinToString("\n")) }
+            .sortedBy { it.hand }
             .mapIndexed { index, handWithBid -> (index + 1) * handWithBid.bid }
             .sum()
 
@@ -33,76 +33,47 @@ class CamelCards(val handsWithBids: List<HandWithBid>) {
     }
 
     data class Hand(
-        val cards: List<Card>,
-        val withJokers: Boolean
+        val cards: List<Card>
     ) : Comparable<Hand> {
 
-        private val type: Type = determineType()
+        private val jokerCount = cards.count { it == JOKER }
+        private val type = determineType()
 
-        private fun determineType(): Type {
-            val cardWithCount: List<Pair<Card, Int>> =
-                cards.groupingBy { it }.eachCount().entries.map { it.key to it.value }.sortedByDescending { it.second }
-            return when {
-                // 5
-                cardWithCount.size == 1 -> FIVE_OF_A_KIND
-
-                // 4, 1
-                cardWithCount.size == 2 && cardWithCount[0].second == 4 -> {
-                    if (cardWithCount[0].first == JOKER || cardWithCount[1].first == JOKER) {
-                        FIVE_OF_A_KIND
-                    } else {
-                        FOUR_OF_A_KIND
-                    }
-                }
-
-                // 3, 2
-                cardWithCount.size == 2 && cardWithCount[0].second == 3 -> {
-                    if (cardWithCount[0].first == JOKER || cardWithCount[1].first == JOKER) {
-                        FIVE_OF_A_KIND
-                    } else {
-                        FULL_HOUSE
-                    }
-                }
-
-                // 3, 1, 1
-                cardWithCount.size == 3 && cardWithCount[0].second == 3 -> {
-                    if (cardWithCount.any { it.first == JOKER }) {
-                        FOUR_OF_A_KIND
-                    } else {
-                        THREE_OF_A_KIND
-                    }
-                }
-
-                // 2, 2, 1
-                cardWithCount.size == 3 -> {
-                    if (cardWithCount[0].first == JOKER || cardWithCount[1].first == JOKER) {
-                        FOUR_OF_A_KIND
-                    } else if (cardWithCount[2].first == JOKER) {
-                        FULL_HOUSE
-                    } else {
-                        TWO_PAIR
-                    }
-                }
-
-                // 2, 1, 1, 1
-                cardWithCount.size == 4 -> {
-                    if (cardWithCount.any { it.first == JOKER }) {
-                        THREE_OF_A_KIND
-                    } else {
-                        ONE_PAIR
-                    }
-                }
-
-                // 1, 1, 1, 1, 1
-                else -> {
-                    if (cardWithCount.any { it.first == JOKER }) {
-                        ONE_PAIR
-                    } else {
-                        HIGH_CARD
-                    }
+        private fun determineType(): Type =
+            with(cards.toCardBuckets().adaptForJokers()) {
+                when {
+                    size == 1 -> FIVE_OF_A_KIND
+                    size == 2 && first().count == 4 -> FOUR_OF_A_KIND
+                    size == 2 && first().count == 3 -> FULL_HOUSE
+                    size == 3 && first().count == 3 -> THREE_OF_A_KIND
+                    size == 3 -> TWO_PAIR
+                    size == 4 -> ONE_PAIR
+                    else -> HIGH_CARD
                 }
             }
-        }
+
+        private fun List<Card>.toCardBuckets() =
+            groupingBy { it }
+                .eachCount()
+                .map { (card, count) -> CardBucket(card, count) }
+                .sortedByDescending { it.count }
+
+        private fun List<CardBucket>.adaptForJokers() =
+            if (jokerCount == 0 || jokerCount == 5) {
+                this
+            } else {
+                addJokerCountToBiggestBucket()
+            }
+
+        private fun List<CardBucket>.addJokerCountToBiggestBucket() =
+            filter { it.card != JOKER }
+                .mapIndexed { index, cardBucket ->
+                    if (index == 0) {
+                        cardBucket.copy(count = cardBucket.count + jokerCount)
+                    } else {
+                        cardBucket
+                    }
+                }
 
         override fun toString() =
             "Hand(cards=" + cards.joinToString("") { it.chr.toString() } + ", type=$type)"
@@ -119,12 +90,11 @@ class CamelCards(val handsWithBids: List<HandWithBid>) {
 
         companion object {
             fun fromInput(input: String, withJokers: Boolean) =
-                Hand(
-                    cards = input.map { Card.fromChar(it, withJokers) },
-                    withJokers = withJokers
-                )
+                Hand(cards = input.map { Card.fromChar(it, withJokers) })
         }
     }
+
+    data class CardBucket(val card: Card, val count: Int)
 
     enum class Type {
         HIGH_CARD,
