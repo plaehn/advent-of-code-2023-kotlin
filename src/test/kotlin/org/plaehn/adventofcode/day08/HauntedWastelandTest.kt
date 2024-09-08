@@ -13,9 +13,9 @@ class HauntedWastelandTest {
 
         val hauntedWasteland = HauntedWasteland.fromInput(lines)
 
-        val steps = hauntedWasteland.countSteps()
+        val steps = hauntedWasteland.countSteps(start = "AAA")
 
-        assertThat(steps).isEqualTo(2)
+        assertThat(steps).isEqualTo(2L)
     }
 
     @Test
@@ -24,8 +24,30 @@ class HauntedWastelandTest {
 
         val hauntedWasteland = HauntedWasteland.fromInput(lines)
 
-        val steps = hauntedWasteland.countSteps()
+        val steps = hauntedWasteland.countSteps(start = "AAA")
 
-        assertThat(steps).isEqualTo(16271)
+        assertThat(steps).isEqualTo(16271L)
+    }
+
+    @Test
+    fun `Count ghost steps for test input`() {
+        val lines = this::class.java.readLines("test_input_part_2.txt")
+
+        val hauntedWasteland = HauntedWasteland.fromInput(lines)
+
+        val steps = hauntedWasteland.countGhostSteps()
+
+        assertThat(steps).isEqualTo(6L)
+    }
+
+    @Test
+    fun `Count ghost steps for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val hauntedWasteland = HauntedWasteland.fromInput(lines)
+
+        val steps = hauntedWasteland.countGhostSteps()
+
+        assertThat(steps).isEqualTo(14265111103729)
     }
 }
