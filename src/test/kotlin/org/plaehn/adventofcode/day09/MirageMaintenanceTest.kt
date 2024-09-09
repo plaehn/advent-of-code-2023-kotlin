@@ -26,6 +26,6 @@ class MirageMaintenanceTest {
 
         val sumOfExtrapolatedValues = mirageMaintenance.computeSumOfExtrapolatedValues()
 
-        assertThat(sumOfExtrapolatedValues).isEqualTo(-1)
+        assertThat(sumOfExtrapolatedValues).isEqualTo(2105961943)
     }
 }
