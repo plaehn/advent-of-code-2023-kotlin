@@ -19,6 +19,15 @@ data class Matrix<T>(
 
     fun columns() = transpose().rows()
 
+    fun toMap(): Map<Coord, T> =
+        sequence {
+            for (y in 0 until height()) {
+                for (x in 0 until width()) {
+                    yield(Coord(x, y) to matrix[y][x])
+                }
+            }
+        }.toMap()
+
     fun neighbors(coord: Coord, includeDiagonals: Boolean = false) =
         coord
             .neighbors(includeDiagonals)

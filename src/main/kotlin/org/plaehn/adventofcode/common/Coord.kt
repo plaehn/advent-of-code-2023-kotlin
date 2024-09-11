@@ -4,9 +4,13 @@ import com.google.common.collect.Sets
 
 data class Coord(val x: Int, val y: Int, val z: Int = 0) {
 
-    override fun toString() = "$x,$y,$z"
+    override fun toString() = "($x,$y,$z)"
 
     operator fun plus(summand: Coord) = Coord(x + summand.x, y + summand.y, z + summand.z)
+
+    operator fun minus(subtrahend: Coord) = Coord(x - subtrahend.x, y - subtrahend.y, z - subtrahend.z)
+
+    operator fun times(factor: Coord): Coord = Coord(x * factor.x, y * factor.y, z * factor.z)
 
     fun neighbors(includeDiagonals: Boolean = false, dimensions: Int = 2) =
         neighborOffsets(includeDiagonals, dimensions)
