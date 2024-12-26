@@ -37,6 +37,10 @@ class PipeMaze(private val grid: Matrix<TileType>) {
         return coords2Distance.maxOf { it.value }
     }
 
+    fun countEnclosedTiles(): Int {
+        TODO()
+    }
+    
     companion object {
         fun fromInput(lines: List<String>) =
             PipeMaze(Matrix.fromRows(lines.map { line -> line.map { TileType.fromChar(it) } }, GROUND))
