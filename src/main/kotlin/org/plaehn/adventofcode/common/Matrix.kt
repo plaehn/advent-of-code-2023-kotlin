@@ -33,11 +33,11 @@ data class Matrix<T>(
             .neighbors(includeDiagonals)
             .filter { isInsideBounds(it) }
 
-    private fun isInsideBounds(coord: Coord) = coord.y in 0 until height() && coord.x in 0 until width()
+    fun isInsideBounds(coord: Coord) = coord.y in 0 until height() && coord.x in 0 until width()
 
-    private fun width() = matrix.first().size
+    fun width() = matrix.first().size
 
-    private fun height() = matrix.size
+    fun height() = matrix.size
 
     private fun transpose(): Matrix<T> {
         val transposed = MutableList(width()) { MutableList(height()) { defaultValue } }

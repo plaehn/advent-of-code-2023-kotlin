@@ -25,6 +25,11 @@ data class Coord(val x: Int, val y: Int, val z: Int = 0) {
     private fun isCenter() = x == 0 && y == 0 && z == 0
 
     companion object {
+        val UP = Coord(0, -1)
+        val DOWN = Coord(0, 1)
+        val LEFT = Coord(-1, 0)
+        val RIGHT = Coord(1, 0)
+
         fun fromList(input: List<Int>) =
             Coord(x = input[0], y = input[1], z = input.getOrElse(2) { 0 })
     }

@@ -1,72 +1,104 @@
 package org.plaehn.day10
 
 import org.plaehn.adventofcode.common.Coord
+import org.plaehn.adventofcode.common.Coord.Companion.DOWN
+import org.plaehn.adventofcode.common.Coord.Companion.LEFT
+import org.plaehn.adventofcode.common.Coord.Companion.RIGHT
+import org.plaehn.adventofcode.common.Coord.Companion.UP
 import org.plaehn.adventofcode.common.Matrix
-import org.plaehn.day10.PipeMaze.TileType.GROUND
-import org.plaehn.day10.PipeMaze.TileType.STARTING_POSITION
 import java.util.*
 
-class PipeMaze(private val grid: Matrix<TileType>) {
+class PipeMaze(private val grid: Matrix<Char>) {
 
-    fun countSteps(): Int {
-        val startCoord = grid.toMap().entries.find { it.value == STARTING_POSITION }!!.key
-        val seenCoords = mutableSetOf<Coord>()
-        val coords2Distance = mutableMapOf<Coord, Int>()
+    private val start = grid.toMap().entries.find { it.value == 'S' }!!.key
+    private val path = findPath()
 
-        val front: Queue<Coord> = LinkedList()
-        front.add(startCoord)
-        coords2Distance[startCoord] = 0
-        while (front.isNotEmpty()) {
-
-            val current = front.poll()
-
-            if (current !in seenCoords) {
-                seenCoords.add(current)
-                grid.neighbors(current)
-                    .filter { neighbor ->
-                        grid[current].connectsTo(other = grid[neighbor], offset = neighbor - current)
-                    }
-                    .filter { neighbor -> neighbor !in seenCoords }
-                    .forEach { connectingNeighbor ->
-                        front.add(connectingNeighbor)
-                        coords2Distance[connectingNeighbor] = 1 + coords2Distance.getOrDefault(current, 0)
-                    }
+    private fun findPath(
+        preMove: (Coord, Coord, Coord) -> (Unit) = { _, _, _ -> }
+    ): Set<Coord> {
+        val pipe = mutableSetOf(start)
+        var current = start
+            .neighbors()
+            .filter { grid.isInsideBounds(it) }
+            .first {
+                val d = it - start
+                (grid[it] to d in movements)
             }
+        var direction = current - start
+        while (current != start) {
+            pipe += current
+            movements[grid[current] to direction]?.let { nextDirection ->
+                preMove(current, direction, nextDirection)
+                direction = nextDirection
+                current += direction
+            } ?: error("Invalid movement detected: $current, $direction")
         }
-
-        return coords2Distance.maxOf { it.value }
+        return pipe
     }
+
+    fun countSteps(): Int =
+        path.size / 2
 
     fun countEnclosedTiles(): Int {
-        TODO()
-    }
-    
-    companion object {
-        fun fromInput(lines: List<String>) =
-            PipeMaze(Matrix.fromRows(lines.map { line -> line.map { TileType.fromChar(it) } }, GROUND))
-    }
+        path.removePipeSymbolsNotPartOfPath()
 
-    enum class TileType(
-        val chr: Char,
-        private val connectingOffsets: List<Coord>
-    ) {
-        VERTICAL_PIPE('|', listOf(Coord(0, 1), Coord(0, -1))),
-        HORIZONTAL_PIPE('-', listOf(Coord(-1, 0), Coord(1, 0))),
-        NORTH_EAST_BEND('L', listOf(Coord(0, -1), Coord(1, 0))),
-        NORTH_WEST_BEND('J', listOf(Coord(-1, 0), Coord(0, -1))),
-        SOUTH_WEST_BEND('7', listOf(Coord(-1, 0), Coord(0, 1))),
-        SOUTH_EAST_BEND('F', listOf(Coord(1, 0), Coord(0, 1))),
-        GROUND('.', listOf()),
-        STARTING_POSITION('S', listOf(Coord(0, -1), Coord(0, 1), Coord(-1, 0), Coord(1, 0)));
+        val emptyCorner = listOf(
+            Coord(0, 0),
+            Coord(0, grid.height() - 1),
+            Coord(grid.width() - 1, 0),
+            Coord(grid.width() - 1, grid.height() - 1)
+        ).first { grid[it] == '.' }
 
-        fun connectsTo(other: TileType, offset: Coord) =
-            connectingOffsets.contains(offset) && other.connectingOffsets.contains(Coord(-1, -1) * offset)
-
-        companion object {
-            private val chr2TileType = entries.associateBy { it.chr }
-
-            fun fromChar(chr: Char): TileType =
-                chr2TileType[chr] ?: throw IllegalArgumentException("No such tile type: $chr")
+        findPath { current, direction, nextDirection ->
+            floodFill(current + markingDirection.getValue(direction))
+            if (grid[current] in setOf('7', 'L', 'J', 'F')) {
+                floodFill(current + markingDirection.getValue(nextDirection))
+            }
         }
+        val lookFor = if (grid[emptyCorner] == 'O') '.' else 'O'
+        return grid.toMap().count { (_, tile) -> tile == lookFor }
+    }
+
+    private fun Set<Coord>.removePipeSymbolsNotPartOfPath() {
+        grid.toMap().keys.forEach { coord ->
+            if (coord !in this) {
+                grid[coord] = '.'
+            }
+        }
+    }
+
+    private fun floodFill(coord: Coord) {
+        if (!grid.isInsideBounds(coord)) return
+        val queue = ArrayDeque<Coord>().apply { add(coord) }
+        while (queue.isNotEmpty()) {
+            val next = queue.removeFirst()
+            if (grid.isInsideBounds(next) && grid[next] == '.') {
+                grid[next] = 'O'
+                queue.addAll(next.neighbors())
+            }
+        }
+    }
+
+    companion object {
+        private val markingDirection = mapOf(UP to LEFT, RIGHT to UP, DOWN to RIGHT, LEFT to DOWN)
+
+        private val movements: Map<Pair<Char, Coord>, Coord> =
+            mapOf(
+                ('|' to DOWN) to DOWN,
+                ('|' to UP) to UP,
+                ('-' to RIGHT) to RIGHT,
+                ('-' to LEFT) to LEFT,
+                ('L' to LEFT) to UP,
+                ('L' to DOWN) to RIGHT,
+                ('J' to DOWN) to LEFT,
+                ('J' to RIGHT) to UP,
+                ('7' to RIGHT) to DOWN,
+                ('7' to UP) to LEFT,
+                ('F' to LEFT) to DOWN,
+                ('F' to UP) to RIGHT
+            )
+
+        fun fromInput(lines: List<String>) =
+            PipeMaze(Matrix.fromRows(lines.map { it.toCharArray().toList() }, '.'))
     }
 }

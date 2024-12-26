@@ -43,7 +43,7 @@ class PipeMazeTest {
 
     @Test
     fun `Count enclosed tiles for simple test input`() {
-        val lines = this::class.java.readLines("simple_test_input.txt")
+        val lines = this::class.java.readLines("simple_test_input_part_2.txt")
 
         val pipeMaze = PipeMaze.fromInput(lines)
 
@@ -54,7 +54,7 @@ class PipeMazeTest {
 
     @Test
     fun `Count enclosed tiles for complex test input`() {
-        val lines = this::class.java.readLines("complex_test_input.txt")
+        val lines = this::class.java.readLines("complex_test_input_part_2.txt")
 
         val pipeMaze = PipeMaze.fromInput(lines)
 
@@ -71,6 +71,6 @@ class PipeMazeTest {
 
         val numberOfSteps = pipeMaze.countEnclosedTiles()
 
-        assertThat(numberOfSteps).isEqualTo(-1)
+        assertThat(numberOfSteps).isEqualTo(467)
     }
 }
