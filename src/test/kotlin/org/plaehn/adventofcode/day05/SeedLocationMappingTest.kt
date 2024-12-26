@@ -27,7 +27,7 @@ class SeedLocationMappingTest {
 
         val lowestLocationNumber = seedLocationMapping.findLowestLocationNumber()
 
-        assertThat(lowestLocationNumber).isEqualTo(389056265L)
+        assertThat(lowestLocationNumber).isEqualTo(331445006L)
     }
 
     @Test
@@ -49,7 +49,7 @@ class SeedLocationMappingTest {
 
         val lowestLocationNumber = seedLocationMapping.findLowestLocationNumberWithSeedPairs()
 
-        assertThat(lowestLocationNumber).isEqualTo(137516820L)
+        assertThat(lowestLocationNumber).isEqualTo(6472060L)
     }
 
     private fun readInput(resource: String): List<List<String>> =

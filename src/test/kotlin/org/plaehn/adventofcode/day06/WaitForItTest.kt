@@ -26,7 +26,7 @@ class WaitForItTest {
 
         val product = waitForIt.computeProductOfNumberOfWaysToWin()
 
-        assertThat(product).isEqualTo(227850L)
+        assertThat(product).isEqualTo(316800)
     }
 
     @Test
@@ -48,7 +48,7 @@ class WaitForItTest {
 
         val product = waitForIt.computeProductOfNumberOfWaysToWin()
 
-        assertThat(product).isEqualTo(42948149L)
+        assertThat(product).isEqualTo(45647654L)
     }
 }
 

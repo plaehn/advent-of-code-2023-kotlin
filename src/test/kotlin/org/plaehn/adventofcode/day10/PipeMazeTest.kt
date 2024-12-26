@@ -38,6 +38,6 @@ class PipeMazeTest {
 
         val numberOfSteps = pipeMaze.countSteps()
 
-        assertThat(numberOfSteps).isEqualTo(7093)
+        assertThat(numberOfSteps).isEqualTo(6927)
     }
 }

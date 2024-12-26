@@ -26,7 +26,7 @@ class HauntedWastelandTest {
 
         val steps = hauntedWasteland.countSteps(start = "AAA")
 
-        assertThat(steps).isEqualTo(16271L)
+        assertThat(steps).isEqualTo(12737L)
     }
 
     @Test
@@ -48,6 +48,6 @@ class HauntedWastelandTest {
 
         val steps = hauntedWasteland.countGhostSteps()
 
-        assertThat(steps).isEqualTo(14265111103729)
+        assertThat(steps).isEqualTo(9064949303801L)
     }
 }

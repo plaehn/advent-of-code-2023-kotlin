@@ -37,7 +37,7 @@ class CubeConundrumTest {
         )
         val sumOfIdsOfPossibleGames = cubeConundrum.sumOfIdsOfPossibleGames(maxCubeCountPerColor)
 
-        assertThat(sumOfIdsOfPossibleGames).isEqualTo(2256)
+        assertThat(sumOfIdsOfPossibleGames).isEqualTo(2006)
     }
 
     @Test
@@ -59,6 +59,6 @@ class CubeConundrumTest {
 
         val sumOfPowerOfCubeSets = cubeConundrum.computeSumOfPowerOfCubeSets()
 
-        assertThat(sumOfPowerOfCubeSets).isEqualTo(74229)
+        assertThat(sumOfPowerOfCubeSets).isEqualTo(84911)
     }
 }

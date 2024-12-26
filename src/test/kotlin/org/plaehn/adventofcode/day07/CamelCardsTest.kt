@@ -26,7 +26,7 @@ class CamelCardsTest {
 
         val totalWinnings = camelCards.computeTotalWinnings()
 
-        assertThat(totalWinnings).isEqualTo(246424613L)
+        assertThat(totalWinnings).isEqualTo(251216224L)
     }
 
     @Test
@@ -48,6 +48,6 @@ class CamelCardsTest {
 
         val totalWinnings = camelCards.computeTotalWinnings()
 
-        assertThat(totalWinnings).isEqualTo(248256639)
+        assertThat(totalWinnings).isEqualTo(250825971L)
     }
 }

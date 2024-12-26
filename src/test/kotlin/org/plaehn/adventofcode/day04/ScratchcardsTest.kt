@@ -26,7 +26,7 @@ class ScratchcardsTest {
 
         val points = scratchcards.computePoints()
 
-        assertThat(points).isEqualTo(24848)
+        assertThat(points).isEqualTo(24706)
     }
 
     @Test
@@ -48,6 +48,6 @@ class ScratchcardsTest {
 
         val cardCount = scratchcards.countScratchCards()
 
-        assertThat(cardCount).isEqualTo(7258152)
+        assertThat(cardCount).isEqualTo(13114317)
     }
 }

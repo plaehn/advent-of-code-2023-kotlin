@@ -26,7 +26,7 @@ class TrebuchetTest {
 
         val sum = trebuchet.computeSumOfCalibrationValues()
 
-        assertThat(sum).isEqualTo(53080)
+        assertThat(sum).isEqualTo(53386)
     }
 
     @Test
@@ -48,6 +48,6 @@ class TrebuchetTest {
 
         val sum = trebuchet.computeSumOfCalibrationValues()
 
-        assertThat(sum).isEqualTo(53268)
+        assertThat(sum).isEqualTo(53312)
     }
 }
