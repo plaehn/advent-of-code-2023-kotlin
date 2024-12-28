@@ -1,6 +1,7 @@
 package org.plaehn.adventofcode.common
 
 import com.google.common.collect.Sets
+import kotlin.math.absoluteValue
 
 data class Coord(val x: Int, val y: Int, val z: Int = 0) {
 
@@ -11,6 +12,9 @@ data class Coord(val x: Int, val y: Int, val z: Int = 0) {
     operator fun minus(subtrahend: Coord) = Coord(x - subtrahend.x, y - subtrahend.y, z - subtrahend.z)
 
     operator fun times(factor: Coord): Coord = Coord(x * factor.x, y * factor.y, z * factor.z)
+
+    fun manhattanDistanceTo(other: Coord) =
+        (x - other.x).absoluteValue + (y - other.y).absoluteValue + (z - other.z).absoluteValue
 
     fun neighbors(includeDiagonals: Boolean = false, dimensions: Int = 2) =
         neighborOffsets(includeDiagonals, dimensions)

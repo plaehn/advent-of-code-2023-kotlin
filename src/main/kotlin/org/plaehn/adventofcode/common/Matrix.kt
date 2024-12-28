@@ -39,7 +39,7 @@ data class Matrix<T>(
 
     fun height() = matrix.size
 
-    private fun transpose(): Matrix<T> {
+    fun transpose(): Matrix<T> {
         val transposed = MutableList(width()) { MutableList(height()) { defaultValue } }
         for (i in 0 until height()) {
             for (j in 0 until width()) {

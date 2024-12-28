@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Test
 import org.plaehn.adventofcode.common.readLines
-import org.plaehn.day10.PipeMaze
 
 class PipeMazeTest {
 

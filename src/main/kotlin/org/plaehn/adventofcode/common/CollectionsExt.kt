@@ -1,5 +1,10 @@
 package org.plaehn.adventofcode.common
 
+import com.google.common.collect.Sets
+
+fun <E> Set<E>.combinations(ofSize: Int): Set<Set<E>> = Sets.combinations(this, ofSize)
+
+
 // Cf. https://youtrack.jetbrains.com/issue/KT-41648
 fun <T> Iterable<T>.chunked(predicate: (T, T) -> Boolean): List<List<T>> {
     val underlyingIterable = this

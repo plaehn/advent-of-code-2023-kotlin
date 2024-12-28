@@ -1,4 +1,4 @@
-package org.plaehn.day10
+package org.plaehn.adventofcode.day10
 
 import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.Coord.Companion.DOWN
