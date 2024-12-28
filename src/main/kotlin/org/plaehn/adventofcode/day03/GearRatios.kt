@@ -36,7 +36,7 @@ class GearRatios(private val engineSchematic: Matrix<Char>) {
         range
             .flatMap { columnIndex ->
                 engineSchematic
-                    .neighbors(coord = Coord(x = columnIndex, y = rowIndex), includeDiagonals = true)
+                    .neighbors(coord = Coord(x = columnIndex.toLong(), y = rowIndex.toLong()), includeDiagonals = true)
             }
             .toSet()
 

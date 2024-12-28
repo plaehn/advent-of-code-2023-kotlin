@@ -44,9 +44,9 @@ class PipeMaze(private val grid: Matrix<Char>) {
 
         val emptyCorner = listOf(
             Coord(0, 0),
-            Coord(0, grid.height() - 1),
-            Coord(grid.width() - 1, 0),
-            Coord(grid.width() - 1, grid.height() - 1)
+            Coord(0L, grid.height() - 1L),
+            Coord(grid.width() - 1L, 0),
+            Coord(grid.width() - 1L, grid.height() - 1L)
         ).first { grid[it] == '.' }
 
         findPath { current, direction, nextDirection ->

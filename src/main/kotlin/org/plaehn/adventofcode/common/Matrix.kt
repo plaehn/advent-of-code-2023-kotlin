@@ -5,10 +5,10 @@ data class Matrix<T>(
     private val defaultValue: T
 ) {
 
-    operator fun get(coord: Coord) = this[coord.y][coord.x]
+    operator fun get(coord: Coord) = this[coord.y.toInt()][coord.x.toInt()]
 
     operator fun set(coord: Coord, value: T) {
-        this[coord.y][coord.x] = value
+        this[coord.y.toInt()][coord.x.toInt()] = value
     }
 
     operator fun get(rowNumber: Int): MutableList<T> = matrix[rowNumber]
@@ -23,7 +23,7 @@ data class Matrix<T>(
         sequence {
             for (y in 0 until height()) {
                 for (x in 0 until width()) {
-                    yield(Coord(x, y) to matrix[y][x])
+                    yield(Coord(x.toLong(), y.toLong()) to matrix[y][x])
                 }
             }
         }.toMap()

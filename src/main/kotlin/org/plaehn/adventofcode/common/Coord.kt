@@ -3,7 +3,7 @@ package org.plaehn.adventofcode.common
 import com.google.common.collect.Sets
 import kotlin.math.absoluteValue
 
-data class Coord(val x: Int, val y: Int, val z: Int = 0) {
+data class Coord(val x: Long, val y: Long, val z: Long = 0) {
 
     override fun toString() = "($x,$y,$z)"
 
@@ -21,12 +21,12 @@ data class Coord(val x: Int, val y: Int, val z: Int = 0) {
             .map { this + it }
 
     private fun neighborOffsets(includeDiagonals: Boolean, dimensions: Int) =
-        Sets.cartesianProduct(List(dimensions) { (-1..1).toSet() })
+        Sets.cartesianProduct(List(dimensions) { (-1L..1L).toSet() })
             .map { fromList(it) }
             .filter { !it.isCenter() }
-            .filter { offset -> includeDiagonals || 1 == listOf(offset.x, offset.y, offset.z).count { it != 0 } }
+            .filter { offset -> includeDiagonals || 1 == listOf(offset.x, offset.y, offset.z).count { it != 0L } }
 
-    private fun isCenter() = x == 0 && y == 0 && z == 0
+    private fun isCenter() = x == 0L && y == 0L && z == 0L
 
     companion object {
         val UP = Coord(0, -1)
@@ -34,7 +34,7 @@ data class Coord(val x: Int, val y: Int, val z: Int = 0) {
         val LEFT = Coord(-1, 0)
         val RIGHT = Coord(1, 0)
 
-        fun fromList(input: List<Int>) =
+        fun fromList(input: List<Long>) =
             Coord(x = input[0], y = input[1], z = input.getOrElse(2) { 0 })
     }
 }

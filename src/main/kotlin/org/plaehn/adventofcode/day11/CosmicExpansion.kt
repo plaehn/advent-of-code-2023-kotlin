@@ -4,22 +4,26 @@ import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.Matrix
 import org.plaehn.adventofcode.common.combinations
 
-class CosmicExpansion(private val universe: Matrix<Char>) {
+class CosmicExpansion(private val universe: Matrix<Char>, expansion: Int) {
 
-    fun sumOfShortestPaths(): Int =
+    private val rowOffsetMap = universe.rows().computeOffsetMap(expansion)
+    private val colOffsetMap = universe.columns().computeOffsetMap(expansion)
+
+    private fun List<List<Char>>.computeOffsetMap(expansion: Int): Map<Int, Long> {
+        var sum = 0L
+        return map { row -> if (row.all { it == '.' }) expansion - 1 else 0 }
+            .mapIndexed { index, offset ->
+                sum += offset
+                val foo = index to sum
+                foo
+            }.toMap()
+    }
+
+    fun sumOfShortestPaths(): Long =
         universe
-            .expand()
             .findGalaxyPairs()
+            .expand()
             .sumOf { (lhs, rhs) -> lhs.manhattanDistanceTo(rhs) }
-
-    private fun Matrix<Char>.expand(): Matrix<Char> =
-        expandRows().transpose().expandRows().transpose()
-
-    private fun Matrix<Char>.expandRows() =
-        Matrix.fromRows(
-            rows().flatMap { row -> if (row.all { it == '.' }) listOf(row, row) else listOf(row) },
-            '.'
-        )
 
     private fun Matrix<Char>.findGalaxyPairs(): List<Pair<Coord, Coord>> =
         toMap()
@@ -29,8 +33,20 @@ class CosmicExpansion(private val universe: Matrix<Char>) {
             .combinations(ofSize = 2)
             .map { it.first() to it.last() }
 
+    private fun List<Pair<Coord, Coord>>.expand() =
+        map { (lhs, rhs) -> lhs.expand() to rhs.expand() }
+
+    private fun Coord.expand() =
+        Coord(
+            x + colOffsetMap.getOrDefault(x.toInt(), 0),
+            y + rowOffsetMap.getOrDefault(y.toInt(), 0)
+        )
+
     companion object {
-        fun fromInput(lines: List<String>) =
-            CosmicExpansion(Matrix.fromRows(lines.map { it.toCharArray().toList() }, '.'))
+        fun fromInput(lines: List<String>, expansion: Int = 2) =
+            CosmicExpansion(
+                universe = Matrix.fromRows(lines.map { it.toCharArray().toList() }, '.'),
+                expansion = expansion
+            )
     }
 }

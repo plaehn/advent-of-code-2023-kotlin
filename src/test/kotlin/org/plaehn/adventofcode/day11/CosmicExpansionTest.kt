@@ -29,4 +29,26 @@ class CosmicExpansionTest {
 
         assertThat(sum).isEqualTo(9543156)
     }
+
+    @Test
+    fun `Compute sum of shortest paths with bigger expansion for test input`() {
+        val lines = this::class.java.readLines("test_input.txt")
+
+        val cosmicExpansion = CosmicExpansion.fromInput(lines, expansion = 100)
+
+        val sum = cosmicExpansion.sumOfShortestPaths()
+
+        assertThat(sum).isEqualTo(8410)
+    }
+
+    @Test
+    fun `Compute sum of shortest paths with bigger expansion for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val cosmicExpansion = CosmicExpansion.fromInput(lines, expansion = 1000000)
+
+        val sum = cosmicExpansion.sumOfShortestPaths()
+
+        assertThat(sum).isEqualTo(625243292686)
+    }
 }
