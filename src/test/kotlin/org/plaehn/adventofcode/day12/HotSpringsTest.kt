@@ -19,7 +19,6 @@ class HotSpringsTest {
         assertThat(sum).isEqualTo(21)
     }
 
-    // Takes 18 seconds
     @Test
     fun `Solve part 1 for puzzle input`() {
         val lines = this::class.java.readLines("puzzle_input.txt")
