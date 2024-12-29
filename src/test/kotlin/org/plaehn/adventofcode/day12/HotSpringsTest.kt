@@ -29,4 +29,26 @@ class HotSpringsTest {
 
         assertThat(sum).isEqualTo(7407)
     }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val lines = this::class.java.readLines("test_input.txt")
+
+        val hotSprings = HotSprings.fromInput(lines)
+
+        val sum = hotSprings.solvePart2()
+
+        assertThat(sum).isEqualTo(525152)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val lines = this::class.java.readLines("puzzle_input.txt")
+
+        val hotSprings = HotSprings.fromInput(lines)
+
+        val sum = hotSprings.solvePart2()
+
+        assertThat(sum).isEqualTo(30568243604962)
+    }
 }

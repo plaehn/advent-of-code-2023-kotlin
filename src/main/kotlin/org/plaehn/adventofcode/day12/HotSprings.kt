@@ -5,7 +5,21 @@ import org.plaehn.adventofcode.common.tokenize
 class HotSprings(private val conditionRecords: List<ConditionRecord>) {
 
     fun solvePart1(): Long =
-        conditionRecords.sumOf { it.countArrangements() }
+        conditionRecords
+            .sumOf { it.countArrangements() }
+
+    fun solvePart2(): Long =
+        conditionRecords
+            .unfold()
+            .sumOf { it.countArrangements() }
+
+    private fun List<ConditionRecord>.unfold() =
+        map { record ->
+            ConditionRecord(
+                row = List(5) { record.row }.joinToString("?"),
+                brokenGroupLengths = List(5) { record.brokenGroupLengths }.flatten()
+            )
+        }
 
     companion object {
         fun fromInput(lines: List<String>): HotSprings =
@@ -17,6 +31,7 @@ class HotSprings(private val conditionRecords: List<ConditionRecord>) {
         val brokenGroupLengths: List<Int>
     ) {
 
+        // dynamic programming approach using contiguous groups of broken springs to break into subproblems
         fun countArrangements(): Long {
             // cache[i][j]: if not -1 then equals number of arrangements
             // for row.substring(i) and sizes.subList(j to end)
@@ -78,3 +93,4 @@ class HotSprings(private val conditionRecords: List<ConditionRecord>) {
         }
     }
 }
+
