@@ -29,4 +29,26 @@ class PointOfIncidenceTest {
 
         assertThat(sum).isEqualTo(34911)
     }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.slurp("test_input.txt")
+
+        val pointOfIncidence = PointOfIncidence.fromInput(input)
+
+        val sum = pointOfIncidence.solvePart2()
+
+        assertThat(sum).isEqualTo(400)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.slurp("puzzle_input.txt")
+
+        val pointOfIncidence = PointOfIncidence.fromInput(input)
+
+        val sum = pointOfIncidence.solvePart2()
+
+        assertThat(sum).isEqualTo(33183)
+    }
 }
