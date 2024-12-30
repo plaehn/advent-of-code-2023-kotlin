@@ -1,6 +1,6 @@
 package org.plaehn.adventofcode.day14
 
-import org.plaehn.adventofcode.common.Coord.Companion.UP
+import org.plaehn.adventofcode.common.Coord.Direction.UP
 import org.plaehn.adventofcode.common.Matrix
 
 class ParabolicReflectorDish(private val dish: Matrix<Char>) {

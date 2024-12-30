@@ -1,10 +1,8 @@
 package org.plaehn.adventofcode.day10
 
 import org.plaehn.adventofcode.common.Coord
-import org.plaehn.adventofcode.common.Coord.Companion.DOWN
-import org.plaehn.adventofcode.common.Coord.Companion.LEFT
-import org.plaehn.adventofcode.common.Coord.Companion.RIGHT
-import org.plaehn.adventofcode.common.Coord.Companion.UP
+import org.plaehn.adventofcode.common.Coord.Direction
+import org.plaehn.adventofcode.common.Coord.Direction.*
 import org.plaehn.adventofcode.common.Matrix
 import java.util.*
 
@@ -14,17 +12,17 @@ class PipeMaze(private val grid: Matrix<Char>) {
     private val path = findPath()
 
     private fun findPath(
-        preMove: (Coord, Coord, Coord) -> (Unit) = { _, _, _ -> }
+        preMove: (Coord, Direction, Direction) -> (Unit) = { _, _, _ -> }
     ): Set<Coord> {
         val pipe = mutableSetOf(start)
         var current = start
             .neighbors()
             .filter { grid.isInsideBounds(it) }
             .first {
-                val d = it - start
+                val d = Direction.fromOffset(it - start)
                 (grid[it] to d in movements)
             }
-        var direction = current - start
+        var direction = Direction.fromOffset(current - start)
         while (current != start) {
             pipe += current
             movements[grid[current] to direction]?.let { nextDirection ->
@@ -82,7 +80,7 @@ class PipeMaze(private val grid: Matrix<Char>) {
     companion object {
         private val markingDirection = mapOf(UP to LEFT, RIGHT to UP, DOWN to RIGHT, LEFT to DOWN)
 
-        private val movements: Map<Pair<Char, Coord>, Coord> =
+        private val movements: Map<Pair<Char, Direction>, Direction> =
             mapOf(
                 ('|' to DOWN) to DOWN,
                 ('|' to UP) to UP,
