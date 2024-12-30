@@ -49,6 +49,12 @@ data class Matrix<T>(
         return Matrix(transposed, defaultValue)
     }
 
+    fun swap(coord: Coord, other: Coord) {
+        val tmp = this[other]
+        this[other] = this[coord]
+        this[coord] = tmp
+    }
+
     override fun toString() =
         matrix
             .joinToString(separator = "\n") { row ->
