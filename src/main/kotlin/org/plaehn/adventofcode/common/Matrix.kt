@@ -49,6 +49,15 @@ data class Matrix<T>(
         return Matrix(transposed, defaultValue)
     }
 
+    fun flipHorizontally(): Matrix<T> =
+        fromRows(rows().reversed(), defaultValue)
+
+    fun rotateLeft(): Matrix<T> =
+        Matrix(columns().reversed(), defaultValue)
+
+    fun rotateRight(): Matrix<T> =
+        Matrix(transpose().rows().map { it.reversed().toMutableList() }.toMutableList(), defaultValue)
+
     fun swap(coord: Coord, other: Coord) {
         val tmp = this[other]
         this[other] = this[coord]

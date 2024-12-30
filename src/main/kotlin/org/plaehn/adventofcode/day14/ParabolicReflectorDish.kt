@@ -5,8 +5,31 @@ import org.plaehn.adventofcode.common.Matrix
 
 class ParabolicReflectorDish(private val dish: Matrix<Char>) {
 
-    fun computeTotalLoad(): Long =
+    fun solvePart1(): Long =
         dish.tiltNorth().computeLoad()
+
+    fun solvePart2(): Long {
+        val seen = mutableMapOf<Int, Int>()
+        var result = dish
+        (1..1_000_000_000).forEach { cycleNumber ->
+            result = result.cycle()
+            val state = result.hashCode()
+            if (state in seen) {
+                val cycleLength = cycleNumber - seen.getValue(state)
+                val cyclesRemaining = (1_000_000_000 - cycleNumber) % cycleLength
+                repeat(cyclesRemaining) {
+                    result = result.cycle()
+                }
+                return result.computeLoad()
+            } else {
+                seen[state] = cycleNumber
+            }
+        }
+        return result.computeLoad()
+    }
+
+    private fun Matrix<Char>.cycle(): Matrix<Char> =
+        tiltNorth().tiltWest().tiltSouth().tiltEast()
 
     private fun Matrix<Char>.tiltNorth(): Matrix<Char> =
         apply {
@@ -14,12 +37,21 @@ class ParabolicReflectorDish(private val dish: Matrix<Char>) {
                 .filter { (_, chr) -> chr == 'O' }
                 .forEach { (coord, _) ->
                     var swapWith = coord
-                    while (dish.isInsideBounds(swapWith + UP) && dish[swapWith + UP] == '.') {
+                    while (isInsideBounds(swapWith + UP) && this[swapWith + UP] == '.') {
                         swapWith += UP
                     }
-                    dish.swap(coord, swapWith)
+                    this.swap(coord, swapWith)
                 }
         }
+
+    private fun Matrix<Char>.tiltWest(): Matrix<Char> =
+        flipHorizontally().transpose().tiltNorth().transpose().flipHorizontally()
+
+    private fun Matrix<Char>.tiltSouth(): Matrix<Char> =
+        flipHorizontally().tiltNorth().flipHorizontally()
+
+    private fun Matrix<Char>.tiltEast(): Matrix<Char> =
+        rotateLeft().tiltNorth().rotateRight()
 
     private fun Matrix<Char>.computeLoad(): Long =
         toMap()

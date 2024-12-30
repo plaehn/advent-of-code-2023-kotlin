@@ -14,7 +14,7 @@ class ParabolicReflectorDishTest {
 
         val parabolicReflectorDish = ParabolicReflectorDish.fromInput(input)
 
-        val totalLoad = parabolicReflectorDish.computeTotalLoad()
+        val totalLoad = parabolicReflectorDish.solvePart1()
 
         assertThat(totalLoad).isEqualTo(136)
     }
@@ -25,8 +25,30 @@ class ParabolicReflectorDishTest {
 
         val parabolicReflectorDish = ParabolicReflectorDish.fromInput(input)
 
-        val totalLoad = parabolicReflectorDish.computeTotalLoad()
+        val totalLoad = parabolicReflectorDish.solvePart1()
 
         assertThat(totalLoad).isEqualTo(106186)
+    }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.readLines("test_input.txt")
+
+        val parabolicReflectorDish = ParabolicReflectorDish.fromInput(input)
+
+        val totalLoad = parabolicReflectorDish.solvePart2()
+
+        assertThat(totalLoad).isEqualTo(64)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val parabolicReflectorDish = ParabolicReflectorDish.fromInput(input)
+
+        val totalLoad = parabolicReflectorDish.solvePart2()
+
+        assertThat(totalLoad).isEqualTo(106390)
     }
 }
