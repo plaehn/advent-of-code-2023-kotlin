@@ -7,6 +7,9 @@ data class Matrix<T>(
 
     operator fun get(coord: Coord) = this[coord.y.toInt()][coord.x.toInt()]
 
+    fun getOrDefault(coord: Coord) =
+        if (isInsideBounds(coord)) this[coord.y.toInt()][coord.x.toInt()] else defaultValue
+
     operator fun set(coord: Coord, value: T) {
         this[coord.y.toInt()][coord.x.toInt()] = value
     }
