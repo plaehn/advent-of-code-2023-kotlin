@@ -23,63 +23,61 @@ class TheFloorWillBeLava(private val grid: Matrix<Char>) {
             }
         }.maxOf { front -> beam(setOf(front)).size }
 
-    private fun beam(frontier: Set<Front>, seen: MutableSet<Front> = mutableSetOf()): Set<Coord> {
-        val filtered = frontier
+    private fun beam(frontier: Set<Front>, seen: MutableSet<Front> = mutableSetOf()): Set<Coord> =
+        frontier
             .filter { front -> grid.isInsideBounds(front.position) }
             .filter { front -> front !in seen }
+            .also { seen.addAll(it) }
+            .flatMap { front -> beam(front, frontier - front, seen) }
             .toSet()
-        if (filtered.isEmpty()) return emptySet() else seen.addAll(filtered)
-        return filtered
-            .flatMap { front ->
-                val nextFrontier = filtered - front
-                setOf(front.position) + when (grid.getOrDefault(front.position)) {
-                    '.' -> beam(nextFrontier + go(front.position, front.direction), seen)
-                    '/' -> {
-                        val nextDirection = when (front.direction) {
-                            UP, DOWN -> front.direction.turnRight()
-                            LEFT, RIGHT -> front.direction.turnLeft()
-                        }
-                        beam(nextFrontier + go(front.position, nextDirection), seen)
-                    }
 
-                    '\\' -> {
-                        val nextDirection = when (front.direction) {
-                            UP, DOWN -> front.direction.turnLeft()
-                            LEFT, RIGHT -> front.direction.turnRight()
-                        }
-                        beam(nextFrontier + go(front.position, nextDirection), seen)
-                    }
-
-                    '|' -> {
-                        when (front.direction) {
-                            UP, DOWN -> beam(nextFrontier + go(front.position, front.direction), seen)
-                            LEFT, RIGHT -> beam(
-                                nextFrontier
-                                    + go(front.position, front.direction.turnLeft())
-                                    + go(front.position, front.direction.turnRight()),
-                                seen
-                            )
-                        }
-                    }
-
-                    '-' -> {
-                        when (front.direction) {
-                            LEFT, RIGHT -> beam(nextFrontier + go(front.position, front.direction), seen)
-                            UP, DOWN -> beam(
-                                nextFrontier
-                                    + go(front.position, front.direction.turnLeft())
-                                    + go(front.position, front.direction.turnRight()),
-                                seen
-                            )
-                        }
-                    }
-
-                    '#' -> emptySet()
-
-                    else -> throw IllegalStateException("Unknown element")
+    private fun beam(front: Front, nextFrontier: Set<Front>, seen: MutableSet<Front>): Set<Coord> =
+        setOf(front.position) + when (grid.getOrDefault(front.position)) {
+            '.' -> beam(nextFrontier + go(front.position, front.direction), seen)
+            '/' -> {
+                val nextDirection = when (front.direction) {
+                    UP, DOWN -> front.direction.turnRight()
+                    LEFT, RIGHT -> front.direction.turnLeft()
                 }
-            }.toSet()
-    }
+                beam(nextFrontier + go(front.position, nextDirection), seen)
+            }
+
+            '\\' -> {
+                val nextDirection = when (front.direction) {
+                    UP, DOWN -> front.direction.turnLeft()
+                    LEFT, RIGHT -> front.direction.turnRight()
+                }
+                beam(nextFrontier + go(front.position, nextDirection), seen)
+            }
+
+            '|' -> {
+                when (front.direction) {
+                    UP, DOWN -> beam(nextFrontier + go(front.position, front.direction), seen)
+                    LEFT, RIGHT -> beam(
+                        nextFrontier
+                            + go(front.position, front.direction.turnLeft())
+                            + go(front.position, front.direction.turnRight()),
+                        seen
+                    )
+                }
+            }
+
+            '-' -> {
+                when (front.direction) {
+                    LEFT, RIGHT -> beam(nextFrontier + go(front.position, front.direction), seen)
+                    UP, DOWN -> beam(
+                        nextFrontier
+                            + go(front.position, front.direction.turnLeft())
+                            + go(front.position, front.direction.turnRight()),
+                        seen
+                    )
+                }
+            }
+
+            '#' -> emptySet()
+
+            else -> throw IllegalStateException("Unknown element")
+        }
 
     private fun go(position: Coord, direction: Direction): Front =
         Front(position + direction, direction)

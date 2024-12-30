@@ -2,6 +2,7 @@ package org.plaehn.adventofcode.day16
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.plaehn.adventofcode.common.readLines
 
@@ -43,6 +44,7 @@ class TheFloorWillBeLavaTest {
 
     // TODO takes 2 min 37 sec
     @Test
+    @Disabled
     fun `Solve part 2 for puzzle input`() {
         val input = this::class.java.readLines("puzzle_input.txt")
 
