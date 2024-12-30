@@ -29,4 +29,27 @@ class TheFloorWillBeLavaTest {
 
         assertThat(count).isEqualTo(6994)
     }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.readLines("test_input.txt")
+
+        val theFloorWillBeLava = TheFloorWillBeLava.fromInput(input)
+
+        val count = theFloorWillBeLava.solvePart2()
+
+        assertThat(count).isEqualTo(51)
+    }
+
+    // TODO takes 2 min 37 sec
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val theFloorWillBeLava = TheFloorWillBeLava.fromInput(input)
+
+        val count = theFloorWillBeLava.solvePart2()
+
+        assertThat(count).isEqualTo(7488)
+    }
 }

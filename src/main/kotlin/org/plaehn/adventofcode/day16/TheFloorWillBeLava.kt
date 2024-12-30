@@ -10,6 +10,19 @@ class TheFloorWillBeLava(private val grid: Matrix<Char>) {
     fun solvePart1(): Int =
         beam(setOf(Front(Coord(0, 0), RIGHT))).size
 
+    // TODO use memoization for both parts
+    fun solvePart2(): Int =
+        buildList {
+            (0L..<grid.width()).forEach { x ->
+                add(Front(Coord(x, 0), DOWN))
+                add(Front(Coord(x, grid.height() - 1L), UP))
+            }
+            (0L..<grid.height()).forEach { y ->
+                add(Front(Coord(0, y), RIGHT))
+                add(Front(Coord(grid.width() - 1L, y), LEFT))
+            }
+        }.maxOf { front -> beam(setOf(front)).size }
+
     private fun beam(frontier: Set<Front>, seen: MutableSet<Front> = mutableSetOf()): Set<Coord> {
         val filtered = frontier
             .filter { front -> grid.isInsideBounds(front.position) }
