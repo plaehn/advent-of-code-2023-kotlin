@@ -11,14 +11,14 @@ class TheFloorWillBeLava(private val grid: Matrix<Char>) {
         beam(setOf(Front(Coord(0, 0), RIGHT))).size
 
     private fun beam(frontier: Set<Front>, seen: MutableSet<Front> = mutableSetOf()): Set<Coord> {
-        val oldFrontier = frontier
+        val filtered = frontier
             .filter { front -> grid.isInsideBounds(front.position) }
             .filter { front -> front !in seen }
             .toSet()
-        if (oldFrontier.isEmpty()) return emptySet() else seen.addAll(oldFrontier)
-        return oldFrontier
+        if (filtered.isEmpty()) return emptySet() else seen.addAll(filtered)
+        return filtered
             .flatMap { front ->
-                val nextFrontier = oldFrontier - front
+                val nextFrontier = filtered - front
                 setOf(front.position) + when (grid.getOrDefault(front.position)) {
                     '.' -> beam(nextFrontier + go(front.position, front.direction), seen)
                     '/' -> {
