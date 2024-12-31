@@ -7,10 +7,24 @@ import org.plaehn.adventofcode.common.Matrix
 
 class TheFloorWillBeLava(private val grid: Matrix<Char>) {
 
-    fun solvePart1(): Int =
-        beam(setOf(Front(Coord(0, 0), RIGHT))).size
+    private val moves: Map<Pair<Direction, Char>, Set<Direction>> = mapOf(
+        UP to '-' to setOf(LEFT, RIGHT),
+        DOWN to '-' to setOf(LEFT, RIGHT),
+        LEFT to '|' to setOf(UP, DOWN),
+        RIGHT to '|' to setOf(UP, DOWN),
+        UP to '/' to setOf(RIGHT),
+        DOWN to '/' to setOf(LEFT),
+        LEFT to '/' to setOf(DOWN),
+        RIGHT to '/' to setOf(UP),
+        UP to '\\' to setOf(LEFT),
+        DOWN to '\\' to setOf(RIGHT),
+        LEFT to '\\' to setOf(UP),
+        RIGHT to '\\' to setOf(DOWN)
+    )
 
-    // TODO use memoization for both parts
+    fun solvePart1(): Int =
+        beam(Front(Coord(0, 0), RIGHT)).size
+
     fun solvePart2(): Int =
         buildList {
             (0L..<grid.width()).forEach { x ->
@@ -21,66 +35,27 @@ class TheFloorWillBeLava(private val grid: Matrix<Char>) {
                 add(Front(Coord(0, y), RIGHT))
                 add(Front(Coord(grid.width() - 1L, y), LEFT))
             }
-        }.maxOf { front -> beam(setOf(front)).size }
+        }.maxOf { front -> beam(front).size }
 
-    private fun beam(frontier: Set<Front>, seen: MutableSet<Front> = mutableSetOf()): Set<Coord> =
-        frontier
-            .filter { front -> grid.isInsideBounds(front.position) }
-            .filter { front -> front !in seen }
-            .also { seen.addAll(it) }
-            .flatMap { front -> beam(front, frontier - front, seen) }
-            .toSet()
+    private fun beam(start: Front): Set<Coord> {
+        val seen = mutableSetOf<Front>()
 
-    private fun beam(front: Front, nextFrontier: Set<Front>, seen: MutableSet<Front>): Set<Coord> =
-        setOf(front.position) + when (grid.getOrDefault(front.position)) {
-            '.' -> beam(nextFrontier + go(front.position, front.direction), seen)
-            '/' -> {
-                val nextDirection = when (front.direction) {
-                    UP, DOWN -> front.direction.turnRight()
-                    LEFT, RIGHT -> front.direction.turnLeft()
-                }
-                beam(nextFrontier + go(front.position, nextDirection), seen)
-            }
+        val queue = ArrayDeque<Front>()
+        queue.add(start)
 
-            '\\' -> {
-                val nextDirection = when (front.direction) {
-                    UP, DOWN -> front.direction.turnLeft()
-                    LEFT, RIGHT -> front.direction.turnRight()
-                }
-                beam(nextFrontier + go(front.position, nextDirection), seen)
-            }
+        while (queue.isNotEmpty()) {
+            val front = queue.removeFirst()
+            seen.add(front)
 
-            '|' -> {
-                when (front.direction) {
-                    UP, DOWN -> beam(nextFrontier + go(front.position, front.direction), seen)
-                    LEFT, RIGHT -> beam(
-                        nextFrontier
-                            + go(front.position, front.direction.turnLeft())
-                            + go(front.position, front.direction.turnRight()),
-                        seen
-                    )
-                }
-            }
-
-            '-' -> {
-                when (front.direction) {
-                    LEFT, RIGHT -> beam(nextFrontier + go(front.position, front.direction), seen)
-                    UP, DOWN -> beam(
-                        nextFrontier
-                            + go(front.position, front.direction.turnLeft())
-                            + go(front.position, front.direction.turnRight()),
-                        seen
-                    )
-                }
-            }
-
-            '#' -> emptySet()
-
-            else -> throw IllegalStateException("Unknown element")
+            moves.getOrDefault(front.direction to grid[front.position], setOf(front.direction))
+                .map { newDirection -> Front(front.position + newDirection, newDirection) }
+                .filter { newFront -> newFront !in seen }
+                .filter { newFront -> grid.isInsideBounds(newFront.position) }
+                .forEach { newFront -> queue.add(newFront) }
         }
 
-    private fun go(position: Coord, direction: Direction): Front =
-        Front(position + direction, direction)
+        return seen.map { it.position }.toSet()
+    }
 
     data class Front(
         val position: Coord,
