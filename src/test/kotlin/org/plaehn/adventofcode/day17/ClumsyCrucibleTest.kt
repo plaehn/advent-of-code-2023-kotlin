@@ -27,6 +27,6 @@ class ClumsyCrucibleTest {
 
         val heatLoss = clumsyCrucible.solvePart1()
 
-        assertThat(heatLoss).isEqualTo(-1)
+        assertThat(heatLoss).isEqualTo(916)
     }
 }
