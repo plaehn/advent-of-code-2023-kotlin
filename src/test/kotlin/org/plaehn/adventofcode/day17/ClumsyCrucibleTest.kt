@@ -29,4 +29,25 @@ class ClumsyCrucibleTest {
 
         assertThat(heatLoss).isEqualTo(916)
     }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.readLines("test_input.txt")
+
+        val clumsyCrucible = ClumsyCrucible.fromInput(input)
+
+        val heatLoss = clumsyCrucible.solvePart2()
+
+        assertThat(heatLoss).isEqualTo(94)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val clumsyCrucible = ClumsyCrucible.fromInput(input)
+
+        val heatLoss = clumsyCrucible.solvePart2()
+        assertThat(heatLoss).isEqualTo(1067)
+    }
 }

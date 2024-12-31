@@ -9,9 +9,30 @@ import java.util.*
 class ClumsyCrucible(private val grid: Matrix<Char>) {
 
     fun solvePart1(): Int =
-        findMinimalHeatLoss(Coord(0, 0), Coord(grid.width() - 1L, grid.height() - 1L))
+        findMinimalHeatLoss(
+            start = Coord(0, 0),
+            end = Coord(grid.width() - 1L, grid.height() - 1L),
+            filter = { _, next -> next.sameDirectionCount < 3 },
+            minimalSameDirectionCountAtEnd = 0
+        )
 
-    private fun findMinimalHeatLoss(start: Coord, end: Coord): Int {
+    fun solvePart2(): Int =
+        findMinimalHeatLoss(
+            start = Coord(0, 0),
+            end = Coord(grid.width() - 1L, grid.height() - 1L),
+            filter = { current, next ->
+                (next.direction == current.direction && current.sameDirectionCount < 9) ||
+                    (next.direction != current.direction && current.sameDirectionCount >= 3)
+            },
+            minimalSameDirectionCountAtEnd = 4
+        )
+
+    private fun findMinimalHeatLoss(
+        start: Coord,
+        end: Coord,
+        filter: (State, State) -> Boolean,
+        minimalSameDirectionCountAtEnd: Int
+    ): Int {
         val stateWrappers = mutableMapOf<State, StateWrapper>()
         val queue = PriorityQueue<StateWrapper>()
         val shortestPathFound = mutableSetOf<State>()
@@ -27,22 +48,12 @@ class ClumsyCrucible(private val grid: Matrix<Char>) {
             val state = stateWrapper.state
             shortestPathFound.add(state)
 
-            if (state.position == end) {
-//                computePath(stateWrapper).forEach { state ->
-//                    grid[state.position] = when (state.direction) {
-//                        RIGHT -> '>'
-//                        LEFT -> '<'
-//                        DOWN -> 'v'
-//                        else -> '^'
-//                    }
-//                }
-//                println(grid)
+            if (state.position == end && state.sameDirectionCount >= minimalSameDirectionCountAtEnd) {
                 return stateWrapper.totalHeatLoss
             }
 
-
             state
-                .computeNextStates()
+                .computeNextStates(filter)
                 .filter { it !in shortestPathFound }
                 .forEach { nextState ->
                     val totalHeatLoss = stateWrapper.totalHeatLoss + grid[nextState.position].digitToInt()
@@ -63,24 +74,14 @@ class ClumsyCrucible(private val grid: Matrix<Char>) {
         return Integer.MAX_VALUE
     }
 
-    private fun computePath(stateWrapper: StateWrapper): List<State> {
-        val path = mutableListOf<State>()
-        var wrapper: StateWrapper? = stateWrapper
-        while (wrapper != null) {
-            path.add(wrapper.state)
-            wrapper = wrapper.predecessor
-        }
-        return path.reversed()
-    }
-
-    private fun State.computeNextStates(): List<State> =
+    private fun State.computeNextStates(filter: (State, State) -> Boolean): List<State> =
         listOf(
             State(position = position + direction, direction = direction, sameDirectionCount = sameDirectionCount + 1),
             State(position = position + direction.turnLeft(), direction = direction.turnLeft()),
             State(position = position + direction.turnRight(), direction = direction.turnRight())
         )
             .filter { grid.isInsideBounds(it.position) }
-            .filter { it.sameDirectionCount < 3 }
+            .filter { filter(this, it) }
 
     data class State(
         val position: Coord,
@@ -103,5 +104,3 @@ class ClumsyCrucible(private val grid: Matrix<Char>) {
             ClumsyCrucible(Matrix.fromRows(input.map { row -> row.toCharArray().toList() }, '.'))
     }
 }
-
-
