@@ -27,7 +27,7 @@ class LavaductLagoonTest {
 
         val cubicMeter = lavaductLagoon.solvePart1()
 
-        assertThat(cubicMeter).isEqualTo(-1)
+        assertThat(cubicMeter).isEqualTo(49578)
     }
 
 }

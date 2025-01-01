@@ -2,45 +2,36 @@ package org.plaehn.adventofcode.day18
 
 import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.Coord.Direction
-import org.plaehn.adventofcode.common.Matrix
 import org.plaehn.adventofcode.common.tokenize
+import kotlin.math.abs
 
 class LavaductLagoon(private val digPlan: List<Instruction>) {
 
-    fun solvePart1(): Int =
-        digPlan
+    fun solvePart1(): Int {
+        val polygon = digPlan
             .fold(listOf(Coord(0, 0))) { path, instruction ->
-                path + (1..instruction.amount).map { path.last() + instruction.direction.offset * it }
+                path + (path.last() + instruction.direction.offset * instruction.amount)
             }
-            .toGrid()
-            .digOutInterior()
-            .toMap().count { (_, chr) -> chr == '#' }
+        val perimeter = digPlan.sumOf { it.amount }
+        // https://en.wikipedia.org/wiki/Pick%27s_theorem
+        // A = i + b/2 - 1
+        // rearranged to
+        // i + b = A + b/2 + 1
+        // A: area
+        // i: number of points inside polygon (computed with shoelace algorithm)
+        // b: number of points on boundary (perimeter)
+        return shoelaceArea(polygon).toInt() + perimeter / 2 + 1
 
-    private fun List<Coord>.toGrid(): Pair<Coord, Matrix<Char>> {
-        val minX = minOf { it.x }
-        val maxX = maxOf { it.x }
-        val minY = minOf { it.y }
-        val maxY = maxOf { it.y }
-        val width = (maxX - minX + 1).toInt()
-        val height = (maxY - minY + 1).toInt()
-        val offset = Coord(-minX, -minY)
-        return offset to Matrix.fromRows(List(height) { List(width) { '.' } }, '.').apply {
-            forEach { this[it + offset] = '#' }
-        }
     }
 
-    private fun Pair<Coord, Matrix<Char>>.digOutInterior(): Matrix<Char> {
-        val (offset, grid) = this
-        val queue = ArrayDeque<Coord>()
-        queue.add(offset + Coord(1, 1))
-        while (queue.isNotEmpty()) {
-            val current = queue.removeFirst()
-            grid[current] = '#'
-            current.neighbors()
-                .filter { grid[it] == '.' }
-                .forEach { queue.add(it) }
+    // Cf. https://en.wikipedia.org/wiki/Shoelace_formula
+    private fun shoelaceArea(v: List<Coord>): Double {
+        val n = v.size
+        var a = 0.0
+        for (i in 0 until n - 1) {
+            a += v[i].x * v[i + 1].y - v[i + 1].x * v[i].y
         }
-        return grid
+        return abs(a + v[n - 1].x * v[0].y - v[0].x * v[n - 1].y) / 2.0
     }
 
     data class Instruction(
