@@ -30,4 +30,26 @@ class LavaductLagoonTest {
         assertThat(cubicMeter).isEqualTo(49578)
     }
 
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.readLines("test_input.txt")
+
+        val lavaductLagoon = LavaductLagoon.fromInput(input)
+
+        val cubicMeter = lavaductLagoon.solvePart2()
+
+        assertThat(cubicMeter).isEqualTo(952408144115)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val lavaductLagoon = LavaductLagoon.fromInput(input)
+
+        val cubicMeter = lavaductLagoon.solvePart2()
+
+        assertThat(cubicMeter).isEqualTo(52885384955882)
+    }
+
 }
