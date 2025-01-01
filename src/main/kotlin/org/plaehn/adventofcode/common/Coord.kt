@@ -15,6 +15,7 @@ data class Coord(val x: Long, val y: Long, val z: Long = 0) {
 
     operator fun times(factor: Direction): Coord = times(factor.offset)
     operator fun times(factor: Coord): Coord = Coord(x * factor.x, y * factor.y, z * factor.z)
+    operator fun times(factor: Int): Coord = Coord(x * factor, y * factor, z * factor)
 
     fun manhattanDistanceTo(other: Coord) =
         (x - other.x).absoluteValue + (y - other.y).absoluteValue + (z - other.z).absoluteValue
@@ -54,8 +55,13 @@ data class Coord(val x: Long, val y: Long, val z: Long = 0) {
             }
 
         companion object {
+            fun fromFirstLetter(letter: Char): Direction =
+                entries.firstOrNull { it.name.first() == letter }
+                    ?: throw IllegalArgumentException("Unknown first letter: $letter")
+
             fun fromOffset(offset: Coord): Direction =
-                entries.firstOrNull { it.offset == offset } ?: throw IllegalArgumentException("Unknown offset: $offset")
+                entries.firstOrNull { it.offset == offset }
+                    ?: throw IllegalArgumentException("Unknown offset: $offset")
         }
     }
 

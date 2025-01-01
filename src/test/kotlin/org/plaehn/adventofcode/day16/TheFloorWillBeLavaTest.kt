@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.plaehn.adventofcode.common.readLines
 
 
-class ClumsyCrucibleTest {
+class TheFloorWillBeLavaTest {
 
     @Test
     fun `Solve part 1 for test input`() {
