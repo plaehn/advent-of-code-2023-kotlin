@@ -13,6 +13,7 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
             .filter { rating -> workflowsAccept(rating) }
             .sumOf { rating -> rating.values.sum() }
 
+    // TODO reformulate based on Ranges
     private fun workflowsAccept(rating: Map<Char, Int>): Boolean {
         var name = "in"
         while (name !in listOf("A", "R")) {
@@ -35,16 +36,32 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
         val queue = ArrayDeque<State>()
         queue.add(State(name2Workflow.getValue("in")))
 
+        // TODO clean up this mess
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            println(state)
-            println()
             val rule = state.workflow.rules[state.ruleIndex]
             when (rule.operation) {
                 '>' -> {
                     when (rule.sendToWorkflow) {
-                        "A" -> acceptedRanges.add(state.ranges.splitLarger(rule.category, rule.amount))
-                        "R" -> {} // do nothing
+                        "A" -> {
+                            acceptedRanges.add(state.ranges.splitLarger(rule.category, rule.amount))
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
+                                )
+                            )
+                        }
+
+                        "R" -> {
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
+                                )
+                            )
+                        }
+
                         else -> {
                             queue.add(
                                 State(
@@ -56,7 +73,7 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
                             queue.add(
                                 state.copy(
                                     ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitSmaller(rule.category, rule.amount)
+                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
                                 )
                             )
                         }
@@ -65,8 +82,25 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
 
                 '<' -> {
                     when (rule.sendToWorkflow) {
-                        "A" -> acceptedRanges.add(state.ranges.splitSmaller(rule.category, rule.amount))
-                        "R" -> {} // do nothing
+                        "A" -> {
+                            acceptedRanges.add(state.ranges.splitSmaller(rule.category, rule.amount))
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
+                                )
+                            )
+                        }
+
+                        "R" -> {
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
+                                )
+                            )
+                        }
+
                         else -> {
                             queue.add(
                                 State(
@@ -78,7 +112,7 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
                             queue.add(
                                 state.copy(
                                     ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitLarger(rule.category, rule.amount)
+                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
                                 )
                             )
                         }
@@ -105,7 +139,6 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
 
             }
         }
-        println(acceptedRanges)
 
         return acceptedRanges.sumOf { ranges -> ranges.countCombinations() }
     }
@@ -138,10 +171,38 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
             }.toMap())
         }
 
+        fun splitNotLarger(category: Char, amount: Int): Ranges {
+            val splitRanges = cat2Ranges.getValue(category).map { range ->
+                if (amount in range) {
+                    range.first..amount
+                } else {
+                    range
+                }
+            }
+
+            return Ranges(cat2Ranges.map { (cat, ranges) ->
+                cat to if (cat == category) splitRanges else ranges
+            }.toMap())
+        }
+
         fun splitSmaller(category: Char, amount: Int): Ranges {
             val splitRanges = cat2Ranges.getValue(category).map { range ->
                 if (amount in range) {
                     range.first..<amount
+                } else {
+                    range
+                }
+            }
+
+            return Ranges(cat2Ranges.map { (cat, ranges) ->
+                cat to if (cat == category) splitRanges else ranges
+            }.toMap())
+        }
+
+        fun splitNotSmaller(category: Char, amount: Int): Ranges {
+            val splitRanges = cat2Ranges.getValue(category).map { range ->
+                if (amount in range) {
+                    amount..range.last
                 } else {
                     range
                 }

@@ -49,6 +49,6 @@ class AplentyTest {
 
         val result = aplenty.solvePart2()
 
-        assertThat(result).isEqualTo(-1)
+        assertThat(result).isEqualTo(116365820987729)
     }
 }
