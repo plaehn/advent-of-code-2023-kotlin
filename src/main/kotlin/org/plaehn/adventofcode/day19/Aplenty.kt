@@ -1,6 +1,7 @@
 package org.plaehn.adventofcode.day19
 
 import org.plaehn.adventofcode.common.chunkByBlankLines
+import org.plaehn.adventofcode.common.product
 import org.plaehn.adventofcode.common.toInts
 
 class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int>>) {
@@ -29,38 +30,131 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
         // tree has A and R as leaves; the latter can be discarded
         // A leaves make up the result
 
-        val acceptedRanges = mutableSetOf<Map<Char, List<IntRange>>>()
+        val acceptedRanges = mutableSetOf<Ranges>()
 
         val queue = ArrayDeque<State>()
         queue.add(State(name2Workflow.getValue("in")))
 
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            state.workflow.rules.forEach { rule ->
-                when (rule.category) {
-                    '>' -> {
-
-                        TODO()
+            println(state)
+            println()
+            val rule = state.workflow.rules[state.ruleIndex]
+            when (rule.operation) {
+                '>' -> {
+                    when (rule.sendToWorkflow) {
+                        "A" -> acceptedRanges.add(state.ranges.splitLarger(rule.category, rule.amount))
+                        "R" -> {} // do nothing
+                        else -> {
+                            queue.add(
+                                State(
+                                    workflow = name2Workflow.getValue(rule.sendToWorkflow),
+                                    ruleIndex = 0,
+                                    ranges = state.ranges.splitLarger(rule.category, rule.amount)
+                                )
+                            )
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitSmaller(rule.category, rule.amount)
+                                )
+                            )
+                        }
                     }
-
-                    '<' -> TODO()
-                    else -> TODO()
                 }
+
+                '<' -> {
+                    when (rule.sendToWorkflow) {
+                        "A" -> acceptedRanges.add(state.ranges.splitSmaller(rule.category, rule.amount))
+                        "R" -> {} // do nothing
+                        else -> {
+                            queue.add(
+                                State(
+                                    workflow = name2Workflow.getValue(rule.sendToWorkflow),
+                                    ruleIndex = 0,
+                                    ranges = state.ranges.splitSmaller(rule.category, rule.amount)
+                                )
+                            )
+                            queue.add(
+                                state.copy(
+                                    ruleIndex = state.ruleIndex + 1,
+                                    ranges = state.ranges.splitLarger(rule.category, rule.amount)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                'X' -> queue.add(
+                    state.copy(
+                        workflow = name2Workflow.getValue(rule.sendToWorkflow),
+                        ruleIndex = 0
+                    )
+                )
+
+                else -> if (rule.sendToWorkflow == "A") {
+                    acceptedRanges.add(state.ranges)
+                } else if (rule.sendToWorkflow != "R") {
+                    queue.add(
+                        state.copy(
+                            workflow = name2Workflow.getValue(rule.sendToWorkflow),
+                            ruleIndex = 0
+                        )
+                    )
+                }
+
             }
         }
+        println(acceptedRanges)
 
-        return 0
+        return acceptedRanges.sumOf { ranges -> ranges.countCombinations() }
     }
 
     data class State(
         val workflow: Workflow,
-        val ranges: Map<Char, List<IntRange>> = mapOf(
-            'x' to listOf(1..4000),
+        val ruleIndex: Int = 0,
+        val ranges: Ranges = Ranges()
+    )
+
+    data class Ranges(
+        val cat2Ranges: Map<Char, List<IntRange>> = mapOf(
+            'x' to listOf(1..4000), // TODO do we need a list or will a single range suffice?
             'm' to listOf(1..4000),
             'a' to listOf(1..4000),
             's' to listOf(1..4000)
         )
-    )
+    ) {
+        fun splitLarger(category: Char, amount: Int): Ranges {
+            val splitRanges = cat2Ranges.getValue(category).map { range ->
+                if (amount in range) {
+                    (amount + 1)..range.last
+                } else {
+                    range
+                }
+            }
+
+            return Ranges(cat2Ranges.map { (cat, ranges) ->
+                cat to if (cat == category) splitRanges else ranges
+            }.toMap())
+        }
+
+        fun splitSmaller(category: Char, amount: Int): Ranges {
+            val splitRanges = cat2Ranges.getValue(category).map { range ->
+                if (amount in range) {
+                    range.first..<amount
+                } else {
+                    range
+                }
+            }
+
+            return Ranges(cat2Ranges.map { (cat, ranges) ->
+                cat to if (cat == category) splitRanges else ranges
+            }.toMap())
+        }
+
+        fun countCombinations(): Long =
+            cat2Ranges.values.map { ranges -> ranges.sumOf { range -> range.last - range.first + 1L } }.product()
+    }
 
     data class Workflow(
         val name: String,
