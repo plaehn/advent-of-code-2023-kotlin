@@ -3,218 +3,105 @@ package org.plaehn.adventofcode.day19
 import org.plaehn.adventofcode.common.chunkByBlankLines
 import org.plaehn.adventofcode.common.product
 import org.plaehn.adventofcode.common.toInts
+import org.plaehn.adventofcode.day19.Aplenty.Workflow.Companion.ACCEPT
+import org.plaehn.adventofcode.day19.Aplenty.Workflow.Companion.REJECT
 
 class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int>>) {
 
-    private val name2Workflow = workflows.associateBy { it.name }
+    private val name2Workflow = workflows.associateBy { it.name } + mapOf("A" to ACCEPT, "R" to REJECT)
+    private val acceptedRanges = computeAcceptedRanges()
 
     fun solvePart1(): Int =
         ratings
-            .filter { rating -> workflowsAccept(rating) }
+            .filter { rating -> acceptedRanges.any { it.accept(rating) } }
             .sumOf { rating -> rating.values.sum() }
 
-    // TODO reformulate based on Ranges
-    private fun workflowsAccept(rating: Map<Char, Int>): Boolean {
-        var name = "in"
-        while (name !in listOf("A", "R")) {
-            name = name2Workflow.getValue(name).applyTo(rating)
-        }
-        return name == "A"
-    }
+    fun solvePart2(): Long =
+        acceptedRanges.sumOf { ranges -> ranges.countCombinations() }
 
-    private fun Workflow.applyTo(rating: Map<Char, Int>): String =
-        rules.firstNotNullOf { rule -> rule.applyTo(rating) }
-
-    fun solvePart2(): Long {
-        // workflows and rules form a tree (no workflow is used in more than one rule as RHS (apart from A and R))
-        // every non-literal rule partitions the solution space along one dimension
-        // tree has A and R as leaves; the latter can be discarded
-        // A leaves make up the result
-
+    private fun computeAcceptedRanges(): MutableSet<Ranges> {
         val acceptedRanges = mutableSetOf<Ranges>()
 
         val queue = ArrayDeque<State>()
-        queue.add(State(name2Workflow.getValue("in")))
+        queue.add(State("in"))
 
-        // TODO clean up this mess
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            val rule = state.workflow.rules[state.ruleIndex]
+            val rule = name2Workflow.getValue(state.workflowName).rules[state.ruleIndex]
+
             when (rule.operation) {
-                '>' -> {
-                    when (rule.sendToWorkflow) {
-                        "A" -> {
-                            acceptedRanges.add(state.ranges.splitLarger(rule.category, rule.amount))
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
-                                )
-                            )
-                        }
-
-                        "R" -> {
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
-                                )
-                            )
-                        }
-
-                        else -> {
-                            queue.add(
-                                State(
-                                    workflow = name2Workflow.getValue(rule.sendToWorkflow),
-                                    ruleIndex = 0,
-                                    ranges = state.ranges.splitLarger(rule.category, rule.amount)
-                                )
-                            )
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotLarger(rule.category, rule.amount)
-                                )
-                            )
-                        }
-                    }
-                }
-
-                '<' -> {
-                    when (rule.sendToWorkflow) {
-                        "A" -> {
-                            acceptedRanges.add(state.ranges.splitSmaller(rule.category, rule.amount))
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
-                                )
-                            )
-                        }
-
-                        "R" -> {
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
-                                )
-                            )
-                        }
-
-                        else -> {
-                            queue.add(
-                                State(
-                                    workflow = name2Workflow.getValue(rule.sendToWorkflow),
-                                    ruleIndex = 0,
-                                    ranges = state.ranges.splitSmaller(rule.category, rule.amount)
-                                )
-                            )
-                            queue.add(
-                                state.copy(
-                                    ruleIndex = state.ruleIndex + 1,
-                                    ranges = state.ranges.splitNotSmaller(rule.category, rule.amount)
-                                )
-                            )
-                        }
-                    }
-                }
-
-                'X' -> queue.add(
-                    state.copy(
-                        workflow = name2Workflow.getValue(rule.sendToWorkflow),
-                        ruleIndex = 0
-                    )
-                )
-
-                else -> if (rule.sendToWorkflow == "A") {
+                'A' -> {
                     acceptedRanges.add(state.ranges)
-                } else if (rule.sendToWorkflow != "R") {
+                }
+
+                'R' -> {}
+
+                '<', '>' -> {
+                    val (acceptedRange, notAcceptedRange) = state.ranges.split(rule)
                     queue.add(
-                        state.copy(
-                            workflow = name2Workflow.getValue(rule.sendToWorkflow),
-                            ruleIndex = 0
+                        State(
+                            workflowName = rule.sendToWorkflow,
+                            ruleIndex = 0,
+                            ranges = state.ranges.replace(rule.category, acceptedRange)
+                        )
+                    )
+                    queue.add(
+                        State(
+                            workflowName = state.workflowName,
+                            ruleIndex = state.ruleIndex + 1,
+                            ranges = state.ranges.replace(rule.category, notAcceptedRange)
                         )
                     )
                 }
 
+                else -> queue.add(
+                    State(
+                        workflowName = rule.sendToWorkflow,
+                        ranges = state.ranges
+                    )
+                )
             }
         }
-
-        return acceptedRanges.sumOf { ranges -> ranges.countCombinations() }
+        return acceptedRanges
     }
 
     data class State(
-        val workflow: Workflow,
+        val workflowName: String,
         val ruleIndex: Int = 0,
         val ranges: Ranges = Ranges()
     )
 
     data class Ranges(
-        val cat2Ranges: Map<Char, List<IntRange>> = mapOf(
-            'x' to listOf(1..4000), // TODO do we need a list or will a single range suffice?
-            'm' to listOf(1..4000),
-            'a' to listOf(1..4000),
-            's' to listOf(1..4000)
+        val cat2Ranges: Map<Char, IntRange> = mapOf(
+            'x' to 1..4000,
+            'm' to 1..4000,
+            'a' to 1..4000,
+            's' to 1..4000
         )
     ) {
-        fun splitLarger(category: Char, amount: Int): Ranges {
-            val splitRanges = cat2Ranges.getValue(category).map { range ->
-                if (amount in range) {
-                    (amount + 1)..range.last
-                } else {
-                    range
+        fun split(rule: Rule): Pair<IntRange, IntRange> =
+            with(rule) {
+                cat2Ranges.getValue(category).run {
+                    if (operation == '<') {
+                        first()..<amount to amount..last()
+                    } else {
+                        (amount + 1)..last() to first()..amount
+                    }
                 }
             }
 
-            return Ranges(cat2Ranges.map { (cat, ranges) ->
-                cat to if (cat == category) splitRanges else ranges
+        fun replace(category: Char, newRange: IntRange) =
+            Ranges(cat2Ranges.map { (cat, range) ->
+                cat to if (cat == category) newRange else range
             }.toMap())
-        }
-
-        fun splitNotLarger(category: Char, amount: Int): Ranges {
-            val splitRanges = cat2Ranges.getValue(category).map { range ->
-                if (amount in range) {
-                    range.first..amount
-                } else {
-                    range
-                }
-            }
-
-            return Ranges(cat2Ranges.map { (cat, ranges) ->
-                cat to if (cat == category) splitRanges else ranges
-            }.toMap())
-        }
-
-        fun splitSmaller(category: Char, amount: Int): Ranges {
-            val splitRanges = cat2Ranges.getValue(category).map { range ->
-                if (amount in range) {
-                    range.first..<amount
-                } else {
-                    range
-                }
-            }
-
-            return Ranges(cat2Ranges.map { (cat, ranges) ->
-                cat to if (cat == category) splitRanges else ranges
-            }.toMap())
-        }
-
-        fun splitNotSmaller(category: Char, amount: Int): Ranges {
-            val splitRanges = cat2Ranges.getValue(category).map { range ->
-                if (amount in range) {
-                    amount..range.last
-                } else {
-                    range
-                }
-            }
-
-            return Ranges(cat2Ranges.map { (cat, ranges) ->
-                cat to if (cat == category) splitRanges else ranges
-            }.toMap())
-        }
 
         fun countCombinations(): Long =
-            cat2Ranges.values.map { ranges -> ranges.sumOf { range -> range.last - range.first + 1L } }.product()
+            cat2Ranges.values.map { range -> range.last - range.first + 1L }.product()
+
+        fun accept(rating: Map<Char, Int>): Boolean =
+            rating.all { (category, amount) ->
+                amount in cat2Ranges.getValue(category)
+            }
     }
 
     data class Workflow(
@@ -222,6 +109,9 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
         val rules: List<Rule>
     ) {
         companion object {
+            val ACCEPT = Workflow("A", listOf(Rule('A', 'A', 0, "A")))
+            val REJECT = Workflow("R", listOf(Rule('R', 'R', 0, "R")))
+
             fun fromInput(input: String) =
                 Workflow(
                     name = input.takeWhile { it != '{' },
@@ -235,13 +125,6 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
         val amount: Int,
         val sendToWorkflow: String
     ) {
-        fun applyTo(rating: Map<Char, Int>): String? =
-            when (operation) {
-                '<' -> if (rating.getValue(category) < amount) sendToWorkflow else null
-                '>' -> if (rating.getValue(category) > amount) sendToWorkflow else null
-                else -> sendToWorkflow
-            }
-
 
         companion object {
             fun fromInput(input: String): Rule =
@@ -256,7 +139,7 @@ class Aplenty(workflows: List<Workflow>, private val ratings: List<Map<Char, Int
                         Rule(category.first(), '>', amount.toInt(), sendToWorkflow)
                     }
 
-                    else -> Rule('X', 'x', 0, input)
+                    else -> Rule(input.first(), input.first(), 0, input)
                 }
         }
     }
