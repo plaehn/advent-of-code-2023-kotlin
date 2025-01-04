@@ -57,7 +57,6 @@ class PulsePropagation(private val modules: List<Module>) {
     }
 
     class RecordHighPulseFor(private val sources: Set<String>) : StateSink {
-
         val receivedHighPulse = mutableSetOf<String>()
 
         override fun receive(state: State) {
@@ -65,12 +64,10 @@ class PulsePropagation(private val modules: List<Module>) {
         }
     }
 
-    private
-
-    fun pressButton(
+    private fun pressButton(
         modulesState: ModulesState,
         stateSink: StateSink
-    ): Boolean {
+    ) {
         val queue = ArrayDeque<State>()
         queue.add(State("button", "broadcaster", false))
 
@@ -102,7 +99,6 @@ class PulsePropagation(private val modules: List<Module>) {
                 queue.add(State(currName, output, newPulse))
             }
         }
-        return false
     }
 
     data class State(
@@ -173,7 +169,8 @@ class PulsePropagation(private val modules: List<Module>) {
                     .flatMap { (lhs, outputs) ->
                         outputs.map { output ->
                             val name = lhs.dropWhile { it in listOf('%', '&') }
-                            name to output.dropWhile { it in listOf('%', '&') }
+                            val outputName = output.dropWhile { it in listOf('%', '&') }
+                            name to outputName
                         }
                     }.groupBy { it.second }.map { (key, value) ->
                         key to value.map { it.first }
