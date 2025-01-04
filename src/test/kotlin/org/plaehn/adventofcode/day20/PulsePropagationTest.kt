@@ -40,4 +40,15 @@ class PulsePropagationTest {
 
         assertThat(result).isEqualTo(912199500)
     }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val pulsePropagation = PulsePropagation.fromInput(input)
+
+        val result = pulsePropagation.solvePart2()
+
+        assertThat(result).isEqualTo(237878264003759)
+    }
 }
