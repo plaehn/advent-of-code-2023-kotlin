@@ -31,6 +31,11 @@ data class Matrix<T>(
             }
         }.toMap()
 
+    fun findAll(target: T): Set<Coord> =
+        toMap().filter { (_, chr) ->
+            chr == target
+        }.keys
+    
     fun neighbors(coord: Coord, includeDiagonals: Boolean = false) =
         coord
             .neighbors(includeDiagonals)
