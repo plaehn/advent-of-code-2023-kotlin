@@ -39,6 +39,7 @@ class StepCounterTest {
         val result = stepCounter.solvePart2(stepCount = 26501365)
 
         // too high: 610158187564402
+        // too low:  610158141844489
         assertThat(result).isEqualTo(610158187564402)
     }
 }
