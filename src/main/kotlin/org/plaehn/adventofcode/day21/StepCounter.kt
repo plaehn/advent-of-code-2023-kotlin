@@ -32,6 +32,7 @@ class StepCounter(private val grid: Matrix<Char>) {
     }
 
     // Cf. https://github.com/villuna/aoc23/wiki/A-Geometric-solution-to-advent-of-code-2023,-day-21
+    // Unfortunately, this does not work for my puzzle input
     fun solvePart2(stepCount: Int): Long {
         check(grid.width() == grid.height())
 
