@@ -7,106 +7,118 @@ import kotlin.math.max
 
 class SandSlabs(private val bricks: Set<Brick>) {
 
-    // Puzzle:
-    // -------
-    // max: (9, 9, 337)
-    // min: (0, 0, 1)
+    private val sizeX = 1 + bricks.maxOf { max(it.top.x, it.bottom.x) }.toInt()
+    private val sizeY = 1 + bricks.maxOf { max(it.top.y, it.bottom.y) }.toInt()
+    private val sizeZ = 1 + bricks.maxOf { max(it.top.z, it.bottom.z) }.toInt()
 
     fun solvePart1(): Int {
         val tower = buildTower()
-        printTower(tower)
-        val fallenBricks = letThemFall(bricks)
-        //return fallenBricks.count { brick ->
-//            fallenBricks != letThemFall(fallenBricks - brick)
-        //      }
-        TODO()
+        println(towerToString(tower))
+        letBricksFall(tower)
+        println(towerToString(tower))
+        return bricks.count { brick ->
+
+            //fallenBricks != letThemFall(fallenBricks - brick)
+            true
+        }
     }
 
     private fun buildTower(): Array<Array<Array<Brick>>> {
-        val maxX = bricks.maxOf { max(it.top.x, it.bottom.x) }.toInt()
-        val maxY = bricks.maxOf { max(it.top.y, it.bottom.y) }.toInt()
-        val maxZ = bricks.maxOf { max(it.top.z, it.bottom.z) }.toInt()
-        val tower = Array(size = 1 + maxX) { Array(size = 1 + maxY) { Array(size = 1 + maxZ) { EMPTY } } }
+        val tower = Array(size = sizeX) { Array(size = sizeY) { Array(size = sizeZ) { EMPTY } } }
         bricks.forEach { brick ->
-            brick.forEach { coord ->
-                tower[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()] = brick
-            }
+            brick.forEach { coord -> tower[coord] = brick }
         }
         return tower
     }
-//
-//     x
-//    012
-//    .G. 9
-//    .G. 8
-//    ... 7
-//    FFF 6
-//    ..E 5 z
-//    D.. 4
-//    CCC 3
-//    BBB 2
-//    .A. 1
-//    --- 0
 
-    private fun printTower(tower: Array<Array<Array<Brick>>>) {
-        println()
-        printFromXSide(tower)
-        println()
-        printFromYSide(tower)
-    }
-
-    private fun printFromXSide(tower: Array<Array<Array<Brick>>>) {
-        println(" x ")
-        println("012")
-        (9 downTo 1).forEach { z ->
-            (0..2).forEach { x ->
-                val matchingYBricks = (0..2)
-                    .map { y -> tower[x][y][z] }
-                    .filter { brick -> brick != EMPTY }
-                    .toSet()
-                val chr = when {
-                    matchingYBricks.size > 1 -> '?'
-                    matchingYBricks.size == 1 -> 'A' + bricks.indexOf(matchingYBricks.first())
-                    else -> '.'
+    private fun letBricksFall(
+        tower: Array<Array<Array<Brick>>>,
+        terminateOnFirstMove: Boolean = false
+    ): Boolean {
+        bricks
+            .sortedBy { it.bottom.z }
+            .forEach { brick ->
+                var movedBrick = brick
+                while (true) {
+                    val new = movedBrick.moveDown()
+                    if (new.bottom.z == 0L || !tower.isFree(new)) break
+                    movedBrick = new
                 }
-                print(chr)
-            }
-            print(" $z")
-            if (z == 5) println(" z") else println()
-        }
-        println("--- 0")
-    }
-
-    private fun printFromYSide(tower: Array<Array<Array<Brick>>>) {
-        println(" y ")
-        println("012")
-        (9 downTo 1).forEach { z ->
-            (0..2).forEach { y ->
-                val matchingXBricks = (0..2)
-                    .map { x -> tower[x][y][z] }
-                    .filter { brick -> brick != EMPTY }
-                    .toSet()
-                val chr = when {
-                    matchingXBricks.size > 1 -> '?'
-                    matchingXBricks.size == 1 -> 'A' + bricks.indexOf(matchingXBricks.first())
-                    else -> '.'
+                if (movedBrick != brick) {
+                    if (terminateOnFirstMove) return true
+                    brick.forEach { tower[it] = EMPTY }
+                    movedBrick.forEach { tower[it] = movedBrick }
                 }
-                print(chr)
             }
-            print(" $z")
-            if (z == 5) println(" z") else println()
+        return false
+    }
+
+    private operator fun Array<Array<Array<Brick>>>.set(coord: Coord, brick: Brick) {
+        this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()] = brick
+    }
+
+    private operator fun Array<Array<Array<Brick>>>.get(coord: Coord): Brick =
+        this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()]
+
+    private fun Array<Array<Array<Brick>>>.isFree(brick: Brick): Boolean =
+        brick.all { this[it].id in setOf(".", brick.id) }
+
+    private fun towerToString(tower: Array<Array<Array<Brick>>>): String =
+        "\n" + xSideToString(tower) + "\n" + ySideToString(tower)
+
+    private fun xSideToString(tower: Array<Array<Array<Brick>>>) =
+        buildString {
+            append(" x \n")
+            append("012\n")
+            (9 downTo 1).forEach { z ->
+                (0..2).forEach { x ->
+                    val matchingYBricks = (0..2)
+                        .map { y -> tower[x][y][z] }
+                        .filter { brick -> brick != EMPTY }
+                        .toSet()
+                    val chr = when {
+                        matchingYBricks.size > 1 -> '?'
+                        matchingYBricks.size == 1 -> matchingYBricks.first().id
+                        else -> '.'
+                    }
+                    append(chr)
+                }
+                append(" $z")
+                if (z == 5) append(" z")
+                append("\n")
+            }
+            append("--- 0\n")
         }
-        println("--- 0")
-    }
 
-    private fun letThemFall(bricks: Set<Brick>): Set<Brick> {
+    private fun ySideToString(tower: Array<Array<Array<Brick>>>) =
+        buildString {
+            append(" y \n")
+            append("012\n")
+            (9 downTo 1).forEach { z ->
+                (0..2).forEach { y ->
+                    val matchingXBricks = (0..2)
+                        .map { x -> tower[x][y][z] }
+                        .filter { brick -> brick != EMPTY }
+                        .toSet()
+                    val chr = when {
+                        matchingXBricks.size > 1 -> '?'
+                        matchingXBricks.size == 1 -> matchingXBricks.first().id
+                        else -> '.'
+                    }
+                    append(chr)
+                }
+                append(" $z")
+                if (z == 5) append(" z")
+                append("\n")
 
-        TODO()
-    }
+            }
+            append("--- 0\n")
+        }
 
     data class Brick(
         val bottom: Coord,
-        val top: Coord
+        val top: Coord,
+        val id: String
     ) : Iterable<Coord> {
 
         private val direction: Direction
@@ -127,6 +139,13 @@ class SandSlabs(private val bricks: Set<Brick>) {
             }
         }
 
+        fun moveDown() =
+            Brick(
+                bottom = bottom.copy(z = bottom.z - 1),
+                top = top.copy(z = top.z - 1),
+                id = id
+            )
+
         override fun iterator(): Iterator<Coord> =
             when (direction) {
                 Direction.X -> (bottom.x..top.x).map { Coord(it, bottom.y, bottom.z) }
@@ -135,18 +154,18 @@ class SandSlabs(private val bricks: Set<Brick>) {
             }.iterator()
 
         companion object {
-            val EMPTY = Brick(Coord(0, 0, 0), Coord(0, 0, 0))
+            val EMPTY = Brick(Coord(0, 0, 0), Coord(0, 0, 0), ".")
         }
     }
 
-
     companion object {
         fun fromInput(input: List<String>) =
-            SandSlabs(input.map {
-                val (lhs, rhs) = it.split("~")
+            SandSlabs(input.mapIndexed { index, line ->
+                val (lhs, rhs) = line.split("~")
                 Brick(
                     bottom = Coord.fromList(lhs.toLongs()),
-                    top = Coord.fromList(rhs.toLongs())
+                    top = Coord.fromList(rhs.toLongs()),
+                    id = ('A' + index % 26).toString()
                 )
             }.toSet())
     }
