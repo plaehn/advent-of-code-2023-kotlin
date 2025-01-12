@@ -13,14 +13,19 @@ class SandSlabs(private val bricks: Set<Brick>) {
 
     fun solvePart1(): Int {
         val tower = buildTower()
-        println(towerToString(tower))
         letBricksFall(tower)
-        println(towerToString(tower))
-        return bricks.count { brick ->
 
-            //fallenBricks != letThemFall(fallenBricks - brick)
-            true
-        }
+        val fallenBricks = tower.collectBricks()
+        return fallenBricks
+            .sortedBy { it.id }
+            .count { fallenBrick ->
+                fallenBrick.forEach { coord -> tower[coord] = EMPTY }
+                val canRemove = fallenBricks
+                    .filter { it != fallenBrick }
+                    .all { !tower.isFree(it.moveDown()) }
+                fallenBrick.forEach { coord -> tower[coord] = fallenBrick }
+                canRemove
+            }
     }
 
     private fun buildTower(): Array<Array<Array<Brick>>> {
@@ -31,27 +36,33 @@ class SandSlabs(private val bricks: Set<Brick>) {
         return tower
     }
 
-    private fun letBricksFall(
-        tower: Array<Array<Array<Brick>>>,
-        terminateOnFirstMove: Boolean = false
-    ): Boolean {
+    private fun letBricksFall(tower: Array<Array<Array<Brick>>>) {
         bricks
             .sortedBy { it.bottom.z }
             .forEach { brick ->
                 var movedBrick = brick
                 while (true) {
                     val new = movedBrick.moveDown()
-                    if (new.bottom.z == 0L || !tower.isFree(new)) break
+                    if (!tower.isFree(new)) break
                     movedBrick = new
                 }
                 if (movedBrick != brick) {
-                    if (terminateOnFirstMove) return true
                     brick.forEach { tower[it] = EMPTY }
                     movedBrick.forEach { tower[it] = movedBrick }
                 }
             }
-        return false
     }
+
+    private fun Array<Array<Array<Brick>>>.collectBricks(): Set<Brick> =
+        buildSet {
+            (0..<sizeX).forEach { x ->
+                (0..<sizeY).forEach { y ->
+                    (1..<sizeZ).forEach { z ->
+                        add(this@collectBricks[x][y][z])
+                    }
+                }
+            }
+        }.filter { it != EMPTY }.toSet()
 
     private operator fun Array<Array<Array<Brick>>>.set(coord: Coord, brick: Brick) {
         this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()] = brick
@@ -61,7 +72,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
         this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()]
 
     private fun Array<Array<Array<Brick>>>.isFree(brick: Brick): Boolean =
-        brick.all { this[it].id in setOf(".", brick.id) }
+        brick.bottom.z > 0 && brick.all { this[it].id in setOf(EMPTY.id, brick.id) }
 
     private fun towerToString(tower: Array<Array<Array<Brick>>>): String =
         "\n" + xSideToString(tower) + "\n" + ySideToString(tower)
@@ -78,7 +89,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
                         .toSet()
                     val chr = when {
                         matchingYBricks.size > 1 -> '?'
-                        matchingYBricks.size == 1 -> matchingYBricks.first().id
+                        matchingYBricks.size == 1 -> 'A' + matchingYBricks.first().id % 26
                         else -> '.'
                     }
                     append(chr)
@@ -102,7 +113,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
                         .toSet()
                     val chr = when {
                         matchingXBricks.size > 1 -> '?'
-                        matchingXBricks.size == 1 -> matchingXBricks.first().id
+                        matchingXBricks.size == 1 -> 'A' + matchingXBricks.first().id % 26
                         else -> '.'
                     }
                     append(chr)
@@ -118,7 +129,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
     data class Brick(
         val bottom: Coord,
         val top: Coord,
-        val id: String
+        val id: Int
     ) : Iterable<Coord> {
 
         private val direction: Direction
@@ -154,7 +165,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
             }.iterator()
 
         companion object {
-            val EMPTY = Brick(Coord(0, 0, 0), Coord(0, 0, 0), ".")
+            val EMPTY = Brick(Coord(0, 0, 0), Coord(0, 0, 0), -1)
         }
     }
 
@@ -165,7 +176,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
                 Brick(
                     bottom = Coord.fromList(lhs.toLongs()),
                     top = Coord.fromList(rhs.toLongs()),
-                    id = ('A' + index % 26).toString()
+                    id = index
                 )
             }.toSet())
     }

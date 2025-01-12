@@ -27,6 +27,6 @@ class SandSlabsTest {
 
         val result = sandSlabs.solvePart1()
 
-        assertThat(result).isEqualTo(-1)
+        assertThat(result).isEqualTo(501)
     }
 }
