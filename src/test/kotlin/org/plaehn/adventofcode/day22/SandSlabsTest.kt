@@ -29,4 +29,26 @@ class SandSlabsTest {
 
         assertThat(result).isEqualTo(501)
     }
+
+    @Test
+    fun `Solve part 2 for test input`() {
+        val input = this::class.java.readLines("test_input.txt")
+
+        val sandSlabs = SandSlabs.fromInput(input)
+
+        val result = sandSlabs.solvePart2()
+
+        assertThat(result).isEqualTo(7)
+    }
+
+    @Test
+    fun `Solve part 2 for puzzle input`() {
+        val input = this::class.java.readLines("puzzle_input.txt")
+
+        val sandSlabs = SandSlabs.fromInput(input)
+
+        val result = sandSlabs.solvePart2()
+
+        assertThat(result).isEqualTo(80948)
+    }
 }

@@ -12,10 +12,10 @@ class SandSlabs(private val bricks: Set<Brick>) {
     private val sizeZ = 1 + bricks.maxOf { max(it.top.z, it.bottom.z) }.toInt()
 
     fun solvePart1(): Int {
-        val tower = buildTower()
-        letBricksFall(tower)
-
+        val tower = bricks.toTower()
+        tower.letBricksFallAndCountThem(bricks)
         val fallenBricks = tower.collectBricks()
+
         return fallenBricks
             .sortedBy { it.id }
             .count { fallenBrick ->
@@ -28,29 +28,43 @@ class SandSlabs(private val bricks: Set<Brick>) {
             }
     }
 
-    private fun buildTower(): Array<Array<Array<Brick>>> {
+    fun solvePart2(): Int {
+        val tower = bricks.toTower()
+        tower.letBricksFallAndCountThem(bricks)
+        val fallenBricks = tower.collectBricks()
+
+        return fallenBricks.sumOf { fallenBrick ->
+            val oneRemovedBricks = fallenBricks - setOf(fallenBrick)
+            oneRemovedBricks.toTower().letBricksFallAndCountThem(oneRemovedBricks)
+        }
+    }
+
+    private fun Set<Brick>.toTower(): Array<Array<Array<Brick>>> {
         val tower = Array(size = sizeX) { Array(size = sizeY) { Array(size = sizeZ) { EMPTY } } }
-        bricks.forEach { brick ->
+        forEach { brick ->
             brick.forEach { coord -> tower[coord] = brick }
         }
         return tower
     }
 
-    private fun letBricksFall(tower: Array<Array<Array<Brick>>>) {
+    private fun Array<Array<Array<Brick>>>.letBricksFallAndCountThem(bricks: Set<Brick>): Int {
+        var fallingBricksCount = 0
         bricks
             .sortedBy { it.bottom.z }
             .forEach { brick ->
                 var movedBrick = brick
                 while (true) {
                     val new = movedBrick.moveDown()
-                    if (!tower.isFree(new)) break
+                    if (!isFree(new)) break
                     movedBrick = new
                 }
                 if (movedBrick != brick) {
-                    brick.forEach { tower[it] = EMPTY }
-                    movedBrick.forEach { tower[it] = movedBrick }
+                    fallingBricksCount++
+                    brick.forEach { this[it] = EMPTY }
+                    movedBrick.forEach { this[it] = movedBrick }
                 }
             }
+        return fallingBricksCount
     }
 
     private fun Array<Array<Array<Brick>>>.collectBricks(): Set<Brick> =
@@ -73,58 +87,6 @@ class SandSlabs(private val bricks: Set<Brick>) {
 
     private fun Array<Array<Array<Brick>>>.isFree(brick: Brick): Boolean =
         brick.bottom.z > 0 && brick.all { this[it].id in setOf(EMPTY.id, brick.id) }
-
-    private fun towerToString(tower: Array<Array<Array<Brick>>>): String =
-        "\n" + xSideToString(tower) + "\n" + ySideToString(tower)
-
-    private fun xSideToString(tower: Array<Array<Array<Brick>>>) =
-        buildString {
-            append(" x \n")
-            append("012\n")
-            (9 downTo 1).forEach { z ->
-                (0..2).forEach { x ->
-                    val matchingYBricks = (0..2)
-                        .map { y -> tower[x][y][z] }
-                        .filter { brick -> brick != EMPTY }
-                        .toSet()
-                    val chr = when {
-                        matchingYBricks.size > 1 -> '?'
-                        matchingYBricks.size == 1 -> 'A' + matchingYBricks.first().id % 26
-                        else -> '.'
-                    }
-                    append(chr)
-                }
-                append(" $z")
-                if (z == 5) append(" z")
-                append("\n")
-            }
-            append("--- 0\n")
-        }
-
-    private fun ySideToString(tower: Array<Array<Array<Brick>>>) =
-        buildString {
-            append(" y \n")
-            append("012\n")
-            (9 downTo 1).forEach { z ->
-                (0..2).forEach { y ->
-                    val matchingXBricks = (0..2)
-                        .map { x -> tower[x][y][z] }
-                        .filter { brick -> brick != EMPTY }
-                        .toSet()
-                    val chr = when {
-                        matchingXBricks.size > 1 -> '?'
-                        matchingXBricks.size == 1 -> 'A' + matchingXBricks.first().id % 26
-                        else -> '.'
-                    }
-                    append(chr)
-                }
-                append(" $z")
-                if (z == 5) append(" z")
-                append("\n")
-
-            }
-            append("--- 0\n")
-        }
 
     data class Brick(
         val bottom: Coord,
