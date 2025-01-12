@@ -2,8 +2,11 @@ package org.plaehn.adventofcode.day22
 
 import org.plaehn.adventofcode.common.Coord
 import org.plaehn.adventofcode.common.toLongs
+import org.plaehn.adventofcode.day22.SandSlabs.Brick
 import org.plaehn.adventofcode.day22.SandSlabs.Brick.Companion.EMPTY
 import kotlin.math.max
+
+typealias Tower = Array<Array<Array<Brick>>>
 
 class SandSlabs(private val bricks: Set<Brick>) {
 
@@ -19,7 +22,6 @@ class SandSlabs(private val bricks: Set<Brick>) {
 
     fun solvePart1(): Int =
         fallenBricks
-            .sortedBy { it.id }
             .count { fallenBrick ->
                 fallenBrick.forEach { coord -> tower[coord] = EMPTY }
                 val canRemove = fallenBricks
@@ -35,15 +37,15 @@ class SandSlabs(private val bricks: Set<Brick>) {
             oneRemovedBricks.toTower().letBricksFallAndCountThem(oneRemovedBricks)
         }
 
-    private fun Set<Brick>.toTower(): Array<Array<Array<Brick>>> {
-        val tower = Array(size = sizeX) { Array(size = sizeY) { Array(size = sizeZ) { EMPTY } } }
+    private fun Set<Brick>.toTower(): Tower {
+        val tower = Array(sizeX) { Array(sizeY) { Array(sizeZ) { EMPTY } } }
         forEach { brick ->
             brick.forEach { coord -> tower[coord] = brick }
         }
         return tower
     }
 
-    private fun Array<Array<Array<Brick>>>.letBricksFallAndCountThem(bricks: Set<Brick>): Int {
+    private fun Tower.letBricksFallAndCountThem(bricks: Set<Brick>): Int {
         var fallingBricksCount = 0
         bricks
             .sortedBy { it.bottom.z }
@@ -63,7 +65,7 @@ class SandSlabs(private val bricks: Set<Brick>) {
         return fallingBricksCount
     }
 
-    private fun Array<Array<Array<Brick>>>.collectBricks(): Set<Brick> =
+    private fun Tower.collectBricks(): Set<Brick> =
         buildSet {
             (0..<sizeX).forEach { x ->
                 (0..<sizeY).forEach { y ->
@@ -74,14 +76,14 @@ class SandSlabs(private val bricks: Set<Brick>) {
             }
         }.filter { it != EMPTY }.toSet()
 
-    private operator fun Array<Array<Array<Brick>>>.set(coord: Coord, brick: Brick) {
+    private operator fun Tower.set(coord: Coord, brick: Brick) {
         this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()] = brick
     }
 
-    private operator fun Array<Array<Array<Brick>>>.get(coord: Coord): Brick =
+    private operator fun Tower.get(coord: Coord): Brick =
         this[coord.x.toInt()][coord.y.toInt()][coord.z.toInt()]
 
-    private fun Array<Array<Array<Brick>>>.isFree(brick: Brick): Boolean =
+    private fun Tower.isFree(brick: Brick): Boolean =
         brick.bottom.z > 0 && brick.all { this[it].id in setOf(EMPTY.id, brick.id) }
 
     data class Brick(
