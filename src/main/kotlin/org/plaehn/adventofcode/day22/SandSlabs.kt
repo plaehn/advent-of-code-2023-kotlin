@@ -11,12 +11,14 @@ class SandSlabs(private val bricks: Set<Brick>) {
     private val sizeY = 1 + bricks.maxOf { max(it.top.y, it.bottom.y) }.toInt()
     private val sizeZ = 1 + bricks.maxOf { max(it.top.z, it.bottom.z) }.toInt()
 
-    fun solvePart1(): Int {
-        val tower = bricks.toTower()
-        tower.letBricksFallAndCountThem(bricks)
-        val fallenBricks = tower.collectBricks()
+    private val tower = bricks.toTower()
+    private val fallenBricks = tower.run {
+        letBricksFallAndCountThem(bricks)
+        collectBricks()
+    }
 
-        return fallenBricks
+    fun solvePart1(): Int =
+        fallenBricks
             .sortedBy { it.id }
             .count { fallenBrick ->
                 fallenBrick.forEach { coord -> tower[coord] = EMPTY }
@@ -26,18 +28,12 @@ class SandSlabs(private val bricks: Set<Brick>) {
                 fallenBrick.forEach { coord -> tower[coord] = fallenBrick }
                 canRemove
             }
-    }
 
-    fun solvePart2(): Int {
-        val tower = bricks.toTower()
-        tower.letBricksFallAndCountThem(bricks)
-        val fallenBricks = tower.collectBricks()
-
-        return fallenBricks.sumOf { fallenBrick ->
+    fun solvePart2(): Int =
+        fallenBricks.sumOf { fallenBrick ->
             val oneRemovedBricks = fallenBricks - setOf(fallenBrick)
             oneRemovedBricks.toTower().letBricksFallAndCountThem(oneRemovedBricks)
         }
-    }
 
     private fun Set<Brick>.toTower(): Array<Array<Array<Brick>>> {
         val tower = Array(size = sizeX) { Array(size = sizeY) { Array(size = sizeZ) { EMPTY } } }
