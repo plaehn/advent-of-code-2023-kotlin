@@ -7,6 +7,9 @@ fun String.toIntSet(): Set<Int> = this.tokenize().map { it.trim().toInt() }.toSe
 fun String.toInts(): List<Int> =
     "-?\\d+".toRegex().findAll(this).map { it.value.toInt() }.toList()
 
+fun String.toLongs(): List<Long> =
+    "-?\\d+".toRegex().findAll(this).map { it.value.toLong() }.toList()
+
 fun String.chunkByBlankLines(): List<List<String>> =
     this.lines()
         .chunked { _, current -> current.isBlank() }
